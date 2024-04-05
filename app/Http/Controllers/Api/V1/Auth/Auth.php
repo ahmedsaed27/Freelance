@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Register;
@@ -31,7 +31,7 @@ class Auth extends Controller
 
         $this->EmailVerification($user);
 
-        return $this->success(status:Response::HTTP_OK , message:'User created Successfuly.' , data: [$user]);
+        return $this->success(status:Response::HTTP_OK , message:'User created Successfuly.' , data: $user);
     }
 
 

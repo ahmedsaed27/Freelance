@@ -50,6 +50,19 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
         return $this->getKey();
     }
 
+    public function profile(){
+        return $this->hasOne(Profiles::class , 'user_id');
+    }
+
+    public function cases(){
+        return $this->hasMany(Cases::class , 'user_id');
+    }
+
+    public function receive(){
+        return $this->belongsToMany(Cases::class , 'cases_users' , 'user_id' , 'cases_id')
+        ->withTimestamps();
+    }
+
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *

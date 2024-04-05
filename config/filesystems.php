@@ -44,6 +44,31 @@ return [
             'throw' => false,
         ],
 
+
+        'profiles' => [
+            'driver' => 'local',
+            'root' => public_path('profiles'),
+            'url' => env('APP_URL').'/profiles',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'cases' => [
+            'driver' => 'local',
+            'root' => public_path('cases'),
+            'url' => env('APP_URL').'/cases',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'docs' => [
+            'driver' => 'local',
+            'root' => public_path('docs'),
+            'url' => env('APP_URL').'/docs',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

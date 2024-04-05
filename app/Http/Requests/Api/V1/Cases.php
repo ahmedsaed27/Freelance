@@ -3,17 +3,12 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-
-class Register extends FormRequest
+class Cases extends FormRequest
 {
-
-    // protected $stopOnFirstFailure = true;
-
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -30,14 +25,9 @@ class Register extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required',
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->ignore($this->id),
-            ],
-            'password' => 'required|alpha_num|min:6',
-            'type' => 'required|numeric',
+            'notes' => 'required',
+            'attachments' => 'required|mimes:pdf',
+            'message' => 'sometimes'
         ];
     }
 

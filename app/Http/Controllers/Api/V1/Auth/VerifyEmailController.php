@@ -1,13 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Crypt;
 
 class VerifyEmailController extends Controller
 {
@@ -26,7 +24,11 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        return redirect()->route('email.verified');
+        // return redirect()->route('email.verified');
+        return response()->json([
+            'status' => 200,
+            'message' => 'email verfied'
+        ]);
 
     }
 }
