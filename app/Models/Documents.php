@@ -20,4 +20,9 @@ class Documents extends Model implements HasMedia
     public function user(){
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function docs(){
+        return $this->belongsToMany(Documents::class , 'docs_translators' , 'documents_id' , 'translators_id')
+        ->withTimestamps();
+    }
 }

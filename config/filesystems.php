@@ -69,6 +69,15 @@ return [
             'throw' => false,
         ],
 
+        'verifications' => [
+            'driver' => 'local',
+            'root' => public_path('verifications'),
+            'url' => env('APP_URL').'/verifications',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\Api\V1\Responses;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use \Illuminate\Http\Response;
+
 
 class VerifyEmailController extends Controller
 {
+    use Responses;
     /**
      * Handle the incoming request.
      */
@@ -24,11 +29,11 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        // return redirect()->route('email.verified');
-        return response()->json([
-            'status' => 200,
-            'message' => 'email verfied'
-        ]);
+     
+        $token = Auth::guard('api')->login($user);
 
+        return $this->success(status:Response::HTTP_OK , message:'email verfied' , data:[
+            'token' => $token
+        ]);
     }
 }

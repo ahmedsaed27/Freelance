@@ -63,6 +63,10 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
         ->withTimestamps();
     }
 
+    public function verification(){
+        return $this->hasOne(Verification::class , 'user_id');
+    }
+
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *
