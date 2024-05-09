@@ -4,9 +4,10 @@ namespace App\Enums\Api\V1;
 
 enum Types:int
 {
-    const Translators = 1;
+    
+    case Translators = 1;
 
-    const Accountant = 2;
+    case Accountant = 2;
 
-    const Lawyer = 3;
+    case Lawyer = 3;
 }

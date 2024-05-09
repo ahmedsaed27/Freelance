@@ -14,6 +14,7 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected $connection = 'user_db';
     /**
      * The attributes that are mass assignable.
      *
@@ -23,7 +24,6 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
         'name',
         'email',
         'password',
-        'type'
     ];
 
     /**

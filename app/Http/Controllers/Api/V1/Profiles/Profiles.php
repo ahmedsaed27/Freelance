@@ -34,6 +34,7 @@ class Profiles extends Controller
             'areas_of_expertise' => $request->areas_of_expertise,
             'hourly_rate' => $request->hourly_rate,
             'years_of_experience' => $request->years_of_experience,
+            'type' => $request->type
         ]);
 
         $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');

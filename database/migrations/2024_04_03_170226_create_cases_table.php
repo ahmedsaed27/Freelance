@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            // $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->bigInteger('user_id')->index();
+            $table->boolean('is_visible')->comment('0 => false , 1 => true');
+            $table->tinyInteger('freelance_type')->comment('its meen profile_type');
+            $table->string('title');
+            $table->tinyInteger('country')->default(1)->comment('1 => egypt');
+            $table->foreignId('cities_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->longText('notes');
             // $table->string('attachments');
             $table->longText('message')->nullable();

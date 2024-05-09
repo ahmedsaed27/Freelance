@@ -9,17 +9,12 @@ use App\Traits\Api\V1\Responses;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Registered;
 use \Illuminate\Http\Response;
-use Illuminate\Support\Facades\Crypt;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class Auth extends Controller
 {
     use Responses;
-
-    // public function __construct()
-    // {
-    //     $this->middleware('verified', ['except' => ['login' , 'register' , 'logout']]);
-    // }
 
     public function register(Register $request){
 
@@ -62,7 +57,8 @@ class Auth extends Controller
 
     public function logout()
     {
-        auth()->guard('api')->logout(true);
+        // auth()->guard('api')->logout(true);
+        JWTAuth::parseToken()->invalidate();
 
         return response()->json(['status' => Response::HTTP_OK ,'message' => 'Successfully logged out'] , Response::HTTP_OK);
     }

@@ -37,7 +37,6 @@ class Register extends FormRequest
                 Rule::unique('users', 'email')->ignore($this->id),
             ],
             'password' => 'required|alpha_num|min:6',
-            'type' => 'required|numeric',
         ];
     }
 

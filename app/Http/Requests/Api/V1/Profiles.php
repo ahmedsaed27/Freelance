@@ -2,10 +2,12 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Enums\Api\V1\Types;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rules\Enum;
 
 class Profiles extends FormRequest
 {
@@ -30,7 +32,8 @@ class Profiles extends FormRequest
             'hourly_rate' => 'required|numeric',
             'image' => 'required|image',
             'cv' => 'required|mimes:pdf',
-            'years_of_experience' => 'required|numeric'
+            'years_of_experience' => 'required|numeric',
+            'type' =>  [new Enum(Types::class)]
         ];
     }
 

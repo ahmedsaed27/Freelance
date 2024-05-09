@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\VerificatioRequest;
 use App\Models\Verification as VerificationModel;
 use App\Traits\Api\V1\Responses;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class Verification extends Controller
 {
@@ -27,17 +29,29 @@ class Verification extends Controller
      */
     public function store(VerificatioRequest $request)
     {
-        $request->merge([
-            'user_id' => auth()->guard('api')->id()
-        ]);
+        try{
+            DB::beginTransaction();
 
-        $verification = VerificationModel::create($request->except('attachments'));
+            $request->merge([
+                'user_id' => auth()->guard('api')->id()
+            ]);
 
-        $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
+            $verification = VerificationModel::create($request->except('attachments'));
 
-        $verification->getMedia('verifications');
+            DB::commit();
 
-        return $this->success(status:Response::HTTP_OK , message:'verifications Created Successfully.' , data:$verification);
+            $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
+
+            $verification->getMedia('verifications');
+
+            return $this->success(status:Response::HTTP_OK , message:'verifications Created Successfully.' , data:$verification);
+
+        }catch(Exception $e){
+            DB::rollBack();
+
+            $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:$e->getMessage());
+        }
+
     }
 
     /**
