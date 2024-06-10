@@ -80,7 +80,7 @@ class Verification extends Controller
         $verification = VerificationModel::where('user_id' , auth()->guard('api')->id())->first();
 
         if (!$verification) {
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
         }
 
         $verification->update($request->except('attachments'));
@@ -91,7 +91,7 @@ class Verification extends Controller
 
         $verification->getMedia('verifications');
 
-        return $this->success(status: Response::HTTP_OK, message: 'Profiles Updated Successfully.', data: [
+        return $this->success(status: Response::HTTP_OK, message: 'verification Updated Successfully.', data: [
             'profile' => $verification,
         ]);
     }
@@ -107,6 +107,6 @@ class Verification extends Controller
 
         $profile->delete();
 
-        return $this->success(status: Response::HTTP_OK, message: 'Profiles Deleted Successfully.',data:$profile);
+        return $this->success(status: Response::HTTP_OK, message: 'verification Deleted Successfully.',data:$profile);
     }
 }

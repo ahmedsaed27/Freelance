@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Cases extends Model implements HasMedia
 {
@@ -13,7 +14,21 @@ class Cases extends Model implements HasMedia
 
     protected $table = 'cases';
 
-    protected $fillable = ['user_id' , 'notes' , 'message'];
+    protected $connection = 'mysql';
+
+
+    protected $fillable = [
+        'user_id' ,
+        'notes'  ,
+        'is_visible',
+        'message',
+        'freelance_type',
+        'country',
+        'cities_id',
+        'notes',
+        'message',
+        'title',
+    ];
 
     public $timestamps = true;
 
@@ -25,6 +40,10 @@ class Cases extends Model implements HasMedia
     public function receive(){
         return $this->belongsToMany(User::class , 'cases_users' , 'cases_id' , 'user_id')
         ->withTimestamps();
+    }
+
+    public function city(){
+        return $this->belongsTo(Cities::class , 'cities_id');
     }
 
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Documents;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Docs as DocsRequest;
 use App\Models\Documents as ModelsDocuments;
 use App\Traits\Api\V1\Responses;
 use Exception;
@@ -25,7 +26,7 @@ class Documents extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(DocsRequest $request)
     {
         try{
             $request->merge([
@@ -66,7 +67,7 @@ class Documents extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(DocsRequest $request, string $id)
     {
         $docs = ModelsDocuments::with('user')->where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
 
@@ -89,6 +90,17 @@ class Documents extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $docs = ModelsDocuments::with('user')->where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+
+        if (!$docs) {
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'docs not found.',);
+        }
+        $docs->clearMediaCollection('docs');
+
+        $docs->delete();
+
+        return $this->success(status: Response::HTTP_OK, message: 'Document Deleted Successfully.', data: [
+            'docs' => $docs,
+        ]);
     }
 }

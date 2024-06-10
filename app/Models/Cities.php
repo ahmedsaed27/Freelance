@@ -11,6 +11,8 @@ class Cities extends Model
 
     protected $table = 'cities';
 
+    // protected $connection = 'mysql';
+
     protected $fillable = ['governorate_name_ar' , 'governorate_name_en'];
 
     public $timestamps = true;

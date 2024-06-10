@@ -18,7 +18,7 @@ class Profiles extends Controller
      */
     public function index()
     {
-        $profile = ProfilesModel::with('media')->paginate(10);
+        $profile = ProfilesModel::with('user')->paginate(10);
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: $profile);
     }
@@ -42,8 +42,6 @@ class Profiles extends Controller
 
         $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
 
-        $profile->getMedia('profiles');
-
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Created Successfully.', data: [
             'profile' => $profile,
         ]);
@@ -60,6 +58,7 @@ class Profiles extends Controller
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
         }
 
+        $profile->load('user');
         $profile->getMedia('profiles');
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: [
@@ -85,8 +84,6 @@ class Profiles extends Controller
         $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
         $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
 
-
-        $profile->getMedia('profiles');
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Updated Successfully.', data: [
             'profile' => $profile,

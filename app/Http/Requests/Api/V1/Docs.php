@@ -7,7 +7,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class Cases extends FormRequest
+class Docs extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,17 +25,9 @@ class Cases extends FormRequest
     public function rules(): array
     {
         return [
-            'message' => 'sometimes',
-            'is_visible' => 'required|boolean',
-            'freelance_type' => 'required|string',
-            'title' => 'required|string',
-            'country' => 'required|numeric',
-            'cities_id' => 'required|exists:cities,id',
-            'notes' => 'required|string',
-            'attachment' => 'sometimes|file|size:5120'
+            'attachments' => 'required|file|size:5120'
         ];
     }
-
 
     protected function failedValidation(Validator $validator)
     {

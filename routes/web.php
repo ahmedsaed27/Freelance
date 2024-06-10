@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Cases;
+use App\Models\Cities;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('test' , function(){
+    return Cases::find(2)->getMedia('case');
 });

@@ -31,7 +31,8 @@ class Profiles extends FormRequest
             'areas_of_expertise' => 'required',
             'hourly_rate' => 'required|numeric',
             'image' => 'required|image',
-            'cv' => 'required|mimes:pdf',
+            // 'cv' => 'required|mimes:pdf',
+            'cv' => 'required|image',
             'years_of_experience' => 'required|numeric',
             'type' =>  [new Enum(Types::class)]
         ];

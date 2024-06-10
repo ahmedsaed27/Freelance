@@ -16,8 +16,10 @@ return new class extends Migration
             // $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
 
             $table->bigInteger('user_id')->index();
+            // $table->bigInteger('cases_id')->index();
 
-            $table->foreignId('Cases_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('cases_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+
 
             $table->timestamps();
         });

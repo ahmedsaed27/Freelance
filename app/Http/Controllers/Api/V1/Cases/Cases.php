@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Cases as RequestsCases;
 use App\Models\Cases as ModelsCases;
 use App\Traits\Api\V1\Responses;
+use Exception;
 use Illuminate\Http\Request;
 use \Illuminate\Http\Response;
-
+use Illuminate\Support\Facades\DB;
 
 class Cases extends Controller
 {
@@ -18,7 +19,7 @@ class Cases extends Controller
      */
     public function index()
     {
-        $cases = ModelsCases::with('user')->paginate(10);
+        $cases = ModelsCases::with('user' ,'receive' ,'city', 'media')->paginate(10);
 
         return $this->success(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
     }
@@ -28,17 +29,34 @@ class Cases extends Controller
      */
     public function store(RequestsCases $request)
     {
-        $request->merge([
-            'user_id' => auth()->guard('api')->id()
-        ]);
+        try{
+            $request->merge([
+                'user_id' => auth()->guard('api')->id()
+            ]);
 
-        $case = ModelsCases::create($request->except('attachments'));
+            DB::beginTransaction();
 
-        $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
+            $case = ModelsCases::create($request->except('attachments'));
 
-        $case->getMedia('cases');
+            if($request->hasFile('attachments')){
+                $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
 
-        return $this->success(status:Response::HTTP_OK , message:'Cases Created Successfully' , data:$case);
+                $case->getMedia('case');
+            }
+
+            DB::commit();
+
+            return $this->success(status:Response::HTTP_OK , message:'Cases Created Successfully' , data:$case);
+
+        }catch(Exception $e){
+            DB::rollBack();
+
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
+
+        }
+
+
+
 
     }
 
@@ -61,21 +79,34 @@ class Cases extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
 
-        if (!$case) {
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+        try{
+            $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+
+            if (!$case) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+            }
+
+            DB::beginTransaction();
+            $case->update($request->except('attachments'));
+
+
+            if($request->hasFile('attachments')){
+                $case->clearMediaCollection('case');
+                $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
+                $case->getMedia('cases');
+            }
+
+            DB::commit();
+
+
+            return $this->success(status: Response::HTTP_OK, message: 'Profiles Updated Successfully.', data: $case);
+        }catch(Exception $e){
+            DB::rollBack();
+
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
         }
 
-        $case->update($request->except('attachments'));
-
-
-        $case->clearMediaCollection('case');
-        $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
-
-        $case->getMedia('cases');
-
-        return $this->success(status: Response::HTTP_OK, message: 'Profiles Updated Successfully.', data: $case);
     }
 
     /**
@@ -85,8 +116,12 @@ class Cases extends Controller
     {
         $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
 
-        if (!$case) {
+        if(!$case){
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+        }
+
+        if($case->getMedia('case')){
+            $case->clearMediaCollection('case');
         }
 
         $case->delete();
