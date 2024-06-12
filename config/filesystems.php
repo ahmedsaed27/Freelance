@@ -53,6 +53,22 @@ return [
             'throw' => false,
         ],
 
+        'certificates' => [
+            'driver' => 'local',
+            'root' => public_path('certificates'),
+            'url' => env('APP_URL').'/certificates',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'work_experience' => [
+            'driver' => 'local',
+            'root' => public_path('work_experience'),
+            'url' => env('APP_URL').'/work_experience',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'cases' => [
             'driver' => 'local',
             'root' => public_path('cases'),

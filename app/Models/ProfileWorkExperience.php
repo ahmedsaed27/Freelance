@@ -2,70 +2,42 @@
 
 namespace App\Models;
 
-use App\Enums\Api\V1\Types;
-use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Profiles extends Model implements HasMedia
+class ProfileWorkExperience extends Model implements HasMedia
 {
     use HasFactory , InteractsWithMedia;
 
-    protected $connection = 'mysql';
-
-    protected $table = 'profiles';
+    protected $table = 'profile_work_experiences';
 
     protected $fillable = [
-        'user_id' ,
-        'type' ,
-        'location' ,
-        'areas_of_expertise' ,
-        'hourly_rate' ,
-        'years_of_experience' ,
-        'career',
-        'countries_id',
-        'cities_id',
-        'field',
-        'specialization',
-        'experience'
+      'profiles_id',
+      'job_name',
+      'countries_id',
+      'section',
+      'specialization',
+      'job_type',
+      'work_place',
+      'responsibilities',
+      'career_level',
+      'from',
+      'to',
     ];
 
     public $timestamps = true;
 
     protected $appends = ['conversion_urls'];
 
-    protected $casts = [
-        'areas_of_expertise' => 'array',
-    ];
-
     protected $hidden = [
         'media'
     ];
 
-    public function getTypeAttribute($value){
-        return Types::from($value)->name;
-    }
-
-
-    public function user(){
-        return $this->belongsTo(User::class , 'user_id');
-    }
-
-    public function socials(){
-        return $this->hasOne(ProfileSocials::class , 'profiles_id');
-    }
-
-
-    public function workExperiences(){
-        return $this->hasMany(ProfileWorkExperience::class , 'profiles_id');
-    }
-
-
-    public function education(){
-        return $this->hasMany(ProfileEducation::class , 'profiles_id');
+    public function profile(){
+        return $this->belongsTo(Profiles::class , 'profiles_id');
     }
 
     public function registerMediaConversions(Media $media = null): void
@@ -83,7 +55,7 @@ class Profiles extends Model implements HasMedia
 
     public function getConversionUrlsAttribute()
     {
-        $mediaItems = $this->getMedia('profiles');
+        $mediaItems = $this->getMedia('certificates');
         $conversions = [];
 
         if ($mediaItems->isEmpty()) {
@@ -116,5 +88,4 @@ class Profiles extends Model implements HasMedia
 
         return $conversions;
     }
-
 }

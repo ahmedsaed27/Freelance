@@ -13,13 +13,22 @@ return new class extends Migration
     {
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->bigInteger('user_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
             $table->tinyInteger('type')->comment('1 => Translators , 2 => Accountant , 2 => Lawyer');
             $table->longText('location');
             $table->json('areas_of_expertise');
             $table->integer('hourly_rate');
             $table->tinyInteger('years_of_experience');
+            $table->string('career');
+
+            /****************************** New Data ******************************/
+            $table->unsignedBigInteger('countries_id');
+            $table->unsignedBigInteger('cities_id');
+            $table->enum('field' , ['appeal']);
+            $table->enum('specialization' , ['appeal']);
+            $table->enum('experience' , ['boss'  , 'expert' , 'mid_level' , 'junior' , 'student']);
+
+
             $table->timestamps();
         });
     }
