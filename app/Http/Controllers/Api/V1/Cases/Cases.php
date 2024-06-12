@@ -36,12 +36,11 @@ class Cases extends Controller
 
             DB::beginTransaction();
 
-            $case = ModelsCases::create($request->except('attachments'));
+            $case = ModelsCases::create($request->except('id' , 'certificate'));
 
-            if($request->hasFile('attachments')){
-                $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
-
-                $case->getMedia('case');
+            if($request->hasFile('id') && $request->hasFile('certificate')){
+                $case->addMediaFromRequest('id')->toMediaCollection('case', 'cases');
+                $case->addMediaFromRequest('certificate')->toMediaCollection('case', 'cases');
             }
 
             DB::commit();

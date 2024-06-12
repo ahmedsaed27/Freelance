@@ -13,14 +13,18 @@ return new class extends Migration
     {
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->index();
+            $table->unsignedBigInteger('user_id')->index();
             $table->boolean('is_visible')->comment('0 => false , 1 => true');
             $table->string('freelance_type')->comment('its meen profile_type');
             $table->string('title');
-            $table->tinyInteger('country')->default(1)->comment('1 => egypt');
-            $table->foreignId('cities_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->enum('specialization' , ['civil_law']);
+            $table->unsignedBigInteger('countries_id');
+            $table->unsignedBigInteger('cities_id');
+            $table->unsignedBigInteger('proposed_budget');
+            $table->string('currency');
+            $table->longText('keywords');
             $table->longText('notes');
-            $table->longText('message')->nullable();
+            $table->longText('required_skills')->nullable();
             $table->timestamps();
         });
     }

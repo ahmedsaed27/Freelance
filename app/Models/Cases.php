@@ -21,13 +21,25 @@ class Cases extends Model implements HasMedia
         'user_id' ,
         'notes'  ,
         'is_visible',
-        'message',
         'freelance_type',
-        'country',
+        'countries_id',
         'cities_id',
-        'notes',
-        'message',
         'title',
+        'specialization',
+        'proposed_budget',
+        'currency',
+        'keywords',
+        'required_skills'
+    ];
+
+    protected $appends = ['conversion_urls'];
+
+    protected $hidden = [
+        'media'
+    ];
+
+    protected $casts = [
+        'keywords' => 'array'
     ];
 
     public $timestamps = true;
@@ -42,8 +54,60 @@ class Cases extends Model implements HasMedia
         ->withTimestamps();
     }
 
+
+    public function countrie(){
+        return $this->belongsTo(Country::class , 'countries_id');
+    }
     public function city(){
         return $this->belongsTo(Cities::class , 'cities_id');
     }
 
+    public function registerMediaConversions(Media $media = null): void
+    {
+            $this
+            ->addMediaConversion('thumb-320')
+                ->width(320)
+                ->height(200);
+
+                $this
+                ->addMediaConversion('thumb-100')
+                    ->width(100)
+                    ->height(100);
+    }
+
+    public function getConversionUrlsAttribute()
+    {
+        $mediaItems = $this->getMedia('case');
+        $conversions = [];
+
+        if ($mediaItems->isEmpty()) {
+            return [];
+        }
+
+        foreach ($mediaItems as $mediaItem) {
+            $mimeType = $mediaItem->mime_type;
+            $conversionUrls = [];
+
+            if ($mimeType === 'application/pdf') {
+                $conversions[] = [
+                    'original' => $mediaItem->getUrl(),
+                    'type' => 'pdf',
+                ];
+            } else {
+                $conversionNames = $mediaItem->getMediaConversionNames();
+
+                foreach ($conversionNames as $conversionName) {
+                    $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
+                }
+
+                $conversions[] = [
+                    'original' => $mediaItem->getUrl(),
+                    'type' => 'image',
+                    'conversions' => $conversionUrls,
+                ];
+            }
+        }
+
+        return $conversions;
+    }
 }

@@ -25,14 +25,19 @@ class Cases extends FormRequest
     public function rules(): array
     {
         return [
-            'message' => 'sometimes',
+            'required_skills' => 'sometimes',
             'is_visible' => 'required|boolean',
             'freelance_type' => 'required|string',
             'title' => 'required|string',
-            'country' => 'required|numeric',
-            'cities_id' => 'required|exists:cities,id',
+            'specialization' => 'required|string',
+            'proposed_budget' => 'required|numeric',
+            'keywords' => 'required|array',
+            'countries_id'=> 'required|exists:user_db.countries,id',
+            'cities_id' => 'required|exists:user_db.cities,id',
             'notes' => 'required|string',
-            'attachment' => 'sometimes|file|size:5120'
+            'currency' => 'required|string',
+            'id' => 'required|image',
+            'certificate' => 'required|file|mimes:pdf'
         ];
     }
 
