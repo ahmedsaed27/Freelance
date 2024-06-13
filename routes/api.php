@@ -1,15 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\Auth as AuthController;
-use App\Http\Controllers\Api\V1\Auth\VerifyEmailController as AuthVerifyEmailController;
-use App\Http\Controllers\APi\V1\Cases\Cases;
+use App\Http\Controllers\Api\V1\Cases\Cases;
 use App\Http\Controllers\Api\V1\Documents\Documents;
 use App\Http\Controllers\Api\V1\Profiles\Profiles;
 use App\Http\Controllers\Api\V1\Receive\Receive;
-use App\Http\Controllers\Api\V1\SavedJobs\SavedJobs;
 use App\Http\Controllers\Api\V1\Verification\Verification;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*

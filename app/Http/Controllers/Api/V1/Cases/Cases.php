@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\APi\V1\Cases;
+namespace App\Http\Controllers\Api\V1\Cases;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Cases as RequestsCases;
