@@ -12,6 +12,9 @@ class CasesUsers extends Pivot
 
     protected $table = 'cases_users';
 
+    protected $connection = 'mysql';
+
+
     protected $fillable = ['user_id' , 'cases_id'];
 
     public $timestamps = true;
