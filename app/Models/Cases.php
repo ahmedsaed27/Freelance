@@ -14,9 +14,6 @@ class Cases extends Model implements HasMedia
 
     protected $table = 'cases';
 
-    protected $connection = 'mysql';
-
-
     protected $fillable = [
         'user_id' ,
         'notes'  ,

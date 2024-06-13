@@ -19,7 +19,7 @@ class Cases extends Controller
      */
     public function index()
     {
-        $cases = ModelsCases::with('user' ,'receive' ,'city', 'media')->paginate(10);
+        $cases = ModelsCases::with('user' ,'city', 'media')->paginate(10);
 
         return $this->success(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
     }
@@ -64,13 +64,13 @@ class Cases extends Controller
      */
     public function show(string $id)
     {
-        $case = ModelsCases::with('user')->where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+        $case = ModelsCases::with('user' ,'city')->where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
         }
 
-        return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: $case);
+        return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $case);
     }
 
     /**
@@ -99,7 +99,7 @@ class Cases extends Controller
             DB::commit();
 
 
-            return $this->success(status: Response::HTTP_OK, message: 'Profiles Updated Successfully.', data: $case);
+            return $this->success(status: Response::HTTP_OK, message: 'Cases Updated Successfully.', data: $case);
         }catch(Exception $e){
             DB::rollBack();
 
@@ -125,7 +125,19 @@ class Cases extends Controller
 
         $case->delete();
 
-        return $this->success(status: Response::HTTP_OK, message: 'Profiles Deleted Successfully.', data: $case);
+        return $this->success(status: Response::HTTP_OK, message: 'Cases Deleted Successfully.', data: $case);
 
+    }
+
+
+    public function getCaseByToken(){
+
+        $case = ModelsCases::with('user')->where('user_id' , auth()->guard('api')->id())->first();
+
+        if (!$case) {
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+        }
+
+        return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $case);
     }
 }

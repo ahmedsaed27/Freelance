@@ -14,8 +14,6 @@ class Profiles extends Model implements HasMedia
 {
     use HasFactory , InteractsWithMedia;
 
-    protected $connection = 'mysql';
-
     protected $table = 'profiles';
 
     protected $fillable = [
