@@ -53,10 +53,6 @@ class Cases extends Controller
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
 
         }
-
-
-
-
     }
 
     /**
@@ -76,9 +72,8 @@ class Cases extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(RequestsCases $request, string $id)
     {
-
         try{
             $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
 
@@ -87,13 +82,13 @@ class Cases extends Controller
             }
 
             DB::beginTransaction();
-            $case->update($request->except('attachments'));
+            $case->update($request->except('id' , 'certificate'));
 
 
-            if($request->hasFile('attachments')){
+            if($request->hasFile('id') && $request->hasFile('certificate')){
                 $case->clearMediaCollection('case');
-                $case->addMediaFromRequest('attachments')->toMediaCollection('case', 'cases');
-                $case->getMedia('cases');
+                $case->addMediaFromRequest('id')->toMediaCollection('case', 'cases');
+                $case->addMediaFromRequest('certificate')->toMediaCollection('case', 'cases');
             }
 
             DB::commit();

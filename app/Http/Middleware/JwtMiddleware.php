@@ -21,11 +21,11 @@ class JwtMiddleware
             $user = JWTAuth::parseToken()->authenticate();
         } catch (\Exception $e) {
             if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
-                return response()->json([ 'status' => status::HTTP_INTERNAL_SERVER_ERROR , 'message' => 'Token is Invalid'], status::HTTP_INTERNAL_SERVER_ERROR);
+                return response()->json([ 'status' => status::HTTP_FORBIDDEN , 'message' => 'Token is Invalid'], status::HTTP_FORBIDDEN);
             } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
-                return response()->json(['status' => status::HTTP_INTERNAL_SERVER_ERROR , 'message' => 'Token is Expired'] , status::HTTP_INTERNAL_SERVER_ERROR);
+                return response()->json(['status' => status::HTTP_FORBIDDEN , 'message' => 'Token is Expired'] , status::HTTP_FORBIDDEN);
             } else {
-                return response()->json(['status' => status::HTTP_INTERNAL_SERVER_ERROR ,'message' => 'Authorization Token not found'] , status::HTTP_INTERNAL_SERVER_ERROR);
+                return response()->json(['status' => status::HTTP_FORBIDDEN ,'message' => 'Authorization Token not found'] , status::HTTP_FORBIDDEN);
             }
         }
         return $next($request);

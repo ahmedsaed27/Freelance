@@ -255,4 +255,22 @@ class Profiles extends Controller
         }
     }
 
+
+    public function userHaveProfile(){
+
+        if(ProfilesModel::where('user_id' , auth()->guard('api')->id())->exists()){
+            return Response()->json([
+                'message' => 'User Alredy Have Profile',
+                'status' => true,
+            ], Response::HTTP_OK);
+        }
+
+
+        return Response()->json([
+            'message' => 'User doesnt Have Profile',
+            'status' => false,
+        ], Response::HTTP_OK);
+
+    }
+
 }

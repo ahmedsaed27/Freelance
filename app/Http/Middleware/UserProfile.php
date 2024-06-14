@@ -21,7 +21,7 @@ class UserProfile
             return Response()->json([
                 'status' => HttpResponse::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'You Have Already Profile'
-            ],HttpResponse::HTTP_INTERNAL_SERVER_ERROR);
+            ],HttpResponse::HTTP_UNPROCESSABLE_ENTITY);
         }
         return $next($request);
     }

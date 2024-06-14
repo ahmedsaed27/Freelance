@@ -35,6 +35,7 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     });
 
     Route::apiResource('profile' , Profiles::class)->middleware('userProfile');
+    Route::get('check/profile' , [Profiles::class , 'userHaveProfile']);
     Route::apiResource('case' , Cases::class);
     Route::get('cases/detail' , [Cases::class , 'getCaseByToken']);
     Route::apiResource('receive' , Receive::class)->except('update');
