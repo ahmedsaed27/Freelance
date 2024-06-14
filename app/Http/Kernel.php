@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\JwtMiddleware;
+use App\Http\Middleware\UserProfile;
 use App\Http\Middleware\verifyUserEmail;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -67,5 +68,6 @@ class Kernel extends HttpKernel
         // 'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'verified' => verifyUserEmail::class, // override the laravel EnsureEmailIsVerified class
         'jwtMiddleware' => JwtMiddleware::class,
+        'userProfile' => UserProfile::class
     ];
 }
