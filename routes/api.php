@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\Auth as AuthController;
+use App\Http\Controllers\Api\V1\Booking\BookingController;
 use App\Http\Controllers\Api\V1\Cases\Cases;
 use App\Http\Controllers\Api\V1\Documents\Documents;
 use App\Http\Controllers\Api\V1\Profiles\Profiles;
@@ -43,7 +44,8 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::apiResource('receive' , Receive::class)->except('update');
     Route::apiResource('docs' , Documents::class);
 
-    // Route::apiResource('jobs/saved' , SavedJobs::class)->except('update');
+    Route::apiResource('booking' , BookingController::class);
+
     Route::apiResource('verification' , Verification::class);
 
 });
