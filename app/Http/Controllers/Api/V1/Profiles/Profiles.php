@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\DB;
 class Profiles extends Controller
 {
     use Responses;
+
+    public function __construct()
+    {
+        $this->middleware('userProfile')->only('store');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -102,7 +108,7 @@ class Profiles extends Controller
      */
     public function show(string $id)
     {
-        $profile = ProfilesModel::where('user_id', auth()->guard('api')->id())->where('id' , $id)->first();
+        $profile = ProfilesModel::where('id' , $id)->first();
 
         if (!$profile) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
@@ -126,7 +132,6 @@ class Profiles extends Controller
 
             // Fetch the existing profile with related models
             $profile = ProfilesModel::with(['education', 'workExperiences', 'socials'])
-                ->where('user_id', auth()->guard('api')->id())
                 ->where('id', $id)
                 ->first();
 

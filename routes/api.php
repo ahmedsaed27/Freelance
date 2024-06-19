@@ -26,6 +26,8 @@ Route::middleware(['api'])->prefix('auth')->group(function () {
 });
 
 
+Route::apiResource('profile' , Profiles::class)->only('index' , 'show');
+
 Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
 
     Route::prefix('auth')->group(function(){
@@ -34,7 +36,7 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
         Route::get('me', [AuthController::class, 'me']);
     });
 
-    Route::apiResource('profile' , Profiles::class)->middleware('userProfile');
+    Route::apiResource('profile' , Profiles::class)->except('index' , 'show');
     Route::get('check/profile' , [Profiles::class , 'userHaveProfile']);
     Route::apiResource('case' , Cases::class);
     Route::get('cases/detail' , [Cases::class , 'getCaseByToken']);
