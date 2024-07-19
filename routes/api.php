@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\V1\Auth\Auth as AuthController;
 use App\Http\Controllers\Api\V1\Booking\BookingController;
 use App\Http\Controllers\Api\V1\Cases\Cases;
 use App\Http\Controllers\Api\V1\Documents\Documents;
+use App\Http\Controllers\Api\V1\Papers\Papers;
+use App\Http\Controllers\Api\V1\ProfilePaper\ProfilePaper;
 use App\Http\Controllers\Api\V1\Profiles\Profiles;
 use App\Http\Controllers\Api\V1\Receive\Receive;
 use App\Http\Controllers\Api\V1\Verification\Verification;
@@ -47,6 +49,21 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::apiResource('booking' , BookingController::class);
 
     Route::apiResource('verification' , Verification::class);
+
+    /******************************** Papers Api *******************************/
+
+    Route::get('papers' , [Papers::class , 'index']);
+    Route::get('papers/detail' , [Papers::class , 'getPaperById']);
+    Route::post('papers' , [Papers::class , 'createPaper']);
+    Route::patch('papers' , [Papers::class , 'updatePaper']);
+    Route::delete('papers' , [Papers::class , 'deletePaper']);
+
+    /******************************** Profile Papers Api *******************************/
+
+    Route::get('profile/papers/detail' , [ProfilePaper::class , 'getProfilePapersById']);
+    Route::post('profile/papers' , [ProfilePaper::class , 'createProfilePapers']);
+    Route::patch('profile/papers/update/status' , [ProfilePaper::class , 'updateProfilePaperstStatus']);
+    Route::delete('profile/papers/delete' , [ProfilePaper::class , 'deleteProfilePapers']);
 
 });
 

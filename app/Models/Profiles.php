@@ -66,6 +66,14 @@ class Profiles extends Model implements HasMedia
         return $this->hasMany(ProfileEducation::class , 'profiles_id');
     }
 
+    public function city(){
+        return $this->belongsTo(Cities::class , 'cities_id');
+    }
+
+    public function country(){
+        return $this->belongsTo(Country::class , 'countries_id');
+    }
+
     public function registerMediaConversions(Media $media = null): void
     {
             $this
