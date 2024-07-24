@@ -25,7 +25,11 @@ class Docs extends FormRequest
     public function rules(): array
     {
         return [
-            'attachments' => 'required|file|size:5120'
+            // 'attachments' => 'required|file|size:5120',
+            'attachments' => 'required|file',
+            'expected_price' => 'required|numeric',
+            'demo_file' => 'required|file|mimes:pdf',
+            'final_file' => 'required|file|mimes:pdf',
         ];
     }
 

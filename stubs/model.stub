@@ -1,0 +1,31 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+
+class {{ class }} extends Model
+{
+    use HasFactory , SoftDeletes , LogsActivity;
+
+    protected $table = '';
+
+    protected $fillable = [];
+
+    public $timestamps = true;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->setDescriptionForEvent(fn (string $eventName) => "This {{ class }} has been {$eventName}")
+            ->useLogName({{ class }});
+
+        // Chain fluent methods for configuration options
+    }
+}

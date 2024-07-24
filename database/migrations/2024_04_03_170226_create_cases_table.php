@@ -14,17 +14,18 @@ return new class extends Migration
         Schema::create('cases', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
-            $table->boolean('is_visible')->comment('0 => false , 1 => true');
-            $table->string('freelance_type')->comment('its meen profile_type');
+            $table->boolean('is_visible')->comment('0 => false , 1 => true')->default(true);
+            $table->foreignId('type_id')->constrained('types' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('title');
-            $table->enum('specialization' , ['civil_law']);
-            $table->unsignedBigInteger('countries_id');
-            $table->unsignedBigInteger('cities_id');
-            $table->unsignedBigInteger('proposed_budget');
-            $table->string('currency');
-            $table->longText('keywords');
-            $table->longText('notes');
-            $table->longText('required_skills')->nullable();
+            $table->enum('specialization' , ['civil_law'])->default('civil_law');
+            $table->unsignedBigInteger('country_id');
+            $table->unsignedBigInteger('city_id');
+            $table->foreignId('currency_id')->constrained('currencies' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->float('min_amount');
+            $table->float('max_amount');
+            $table->longText('description');
+            $table->enum('status' , ['Opened' , 'Assigned'])->default('Opened');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

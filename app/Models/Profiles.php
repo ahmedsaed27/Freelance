@@ -6,29 +6,32 @@ use App\Enums\Api\V1\Types;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Profiles extends Model implements HasMedia
 {
-    use HasFactory , InteractsWithMedia;
+    use HasFactory , InteractsWithMedia , SoftDeletes;
 
+    protected $connection = 'mysql';
     protected $table = 'profiles';
 
     protected $fillable = [
         'user_id' ,
-        'type' ,
-        'location' ,
+        'type_id' ,
+        'address' ,
         'areas_of_expertise' ,
         'hourly_rate' ,
         'years_of_experience' ,
         'career',
-        'countries_id',
-        'cities_id',
+        'country_id',
+        'city_id',
         'field',
         'specialization',
-        'experience'
+        'level',
+        'currency_id'
     ];
 
     public $timestamps = true;
@@ -64,6 +67,32 @@ class Profiles extends Model implements HasMedia
 
     public function education(){
         return $this->hasMany(ProfileEducation::class , 'profiles_id');
+    }
+
+    public function city(){
+        return $this->belongsTo(Cities::class , 'city_id');
+    }
+
+    public function country(){
+        return $this->belongsTo(Country::class , 'country_id');
+    }
+
+    public function currency(){
+        return $this->belongsTo(Currency::class , 'currency_id');
+    }
+
+    public function profileType()
+    {
+        return $this->belongsToMany(Type::class, 'profile_type', 'profile_id', 'type_id')
+                    ->withTimestamps()
+                    ->withTrashed()
+                    ->wherePivotNull('deleted_at');
+    }
+
+    public function receive(){
+        return $this->belongsToMany(Cases::class , 'case_profile' , 'profile_id' , 'case_id')
+        ->withPivot('suggested_rate', 'description', 'status', 'estimation_time')
+        ->withTimestamps();
     }
 
     public function registerMediaConversions(Media $media = null): void

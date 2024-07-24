@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1\Receive;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Receive as V1Receive;
 use App\Models\CasesUsers;
+use App\Models\Profiles;
 use App\Models\User;
 use App\Traits\Api\V1\Responses;
 use Illuminate\Http\Request;
@@ -18,23 +20,49 @@ class Receive extends Controller
      */
     public function index()
     {
-        $user_receive = User::with('receive')->where('id' , auth()->guard('api')->id())->first();
+        $profile_receive = Profiles::with('receive')->paginate(10);
+        return $this->success(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
+    }
 
-        return $this->success(status:Response::HTTP_OK , message:'User Retrieved Successfully.' , data:$user_receive);
+    public function getAllDataWithoutPaginate(){
+        $profile_receive = Profiles::with('receive')->get();
+        return $this->success(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(V1Receive $request)
     {
-        $caseId = $request->caseId;
+        $pivotData = $request->only(['suggested_rate', 'description', 'status', 'estimation_time']);
 
-        auth()->guard('api')->user()->receive()->attach($caseId);
+        $user = auth()->guard('api')->user();
+        $profile = $user->profile;
 
-        $receive = auth()->guard('api')->user()->receive;
+        if (!$profile) {
+            return response()->json([
+                'status' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'User profile not found.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
-        return $this->success(status: Response::HTTP_OK, message: 'User received the case successfully.', data: $receive);
+        $case = \App\Models\Cases::find($request->caseId);
+        if (!$case) {
+            return response()->json([
+                'status' => Response::HTTP_BAD_REQUEST,
+                'message' => 'Invalid case ID.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $profile->receive()->attach($request->caseId, $pivotData);
+
+        return response()->json([
+            'status' => Response::HTTP_OK,
+            'message' => 'User received the case successfully.',
+            'data' => $profile->receive()->wherePivot('case_id', $request->caseId)->first(),
+        ], Response::HTTP_OK);
+
+        // return $this->success(status: Response::HTTP_OK, message: 'User received the case successfully.', data: $receive);
     }
 
     /**

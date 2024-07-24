@@ -19,7 +19,7 @@ class Cases extends Controller
      */
     public function index()
     {
-        $cases = ModelsCases::with('user' ,'city', 'media')->paginate(10);
+        $cases = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill')->paginate(10);
 
         return $this->success(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
     }
@@ -37,6 +37,8 @@ class Cases extends Controller
             DB::beginTransaction();
 
             $case = ModelsCases::create($request->except('id' , 'certificate'));
+            $case->caseKeyword()->sync($request->input('keywords'));
+            $case->caseSkill()->sync($request->input('skills'));
 
             if($request->hasFile('id') && $request->hasFile('certificate')){
                 $case->addMediaFromRequest('id')->toMediaCollection('case', 'cases');
@@ -60,7 +62,7 @@ class Cases extends Controller
      */
     public function show(string $id)
     {
-        $case = ModelsCases::with('user' ,'city')->where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+        $case = ModelsCases::with('user' ,'city' ,'caseKeyword' , 'caseSkill')->find($id);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
@@ -75,7 +77,7 @@ class Cases extends Controller
     public function update(RequestsCases $request, string $id)
     {
         try{
-            $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+            $case = ModelsCases::find($id);
 
             if (!$case) {
                 return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
@@ -83,7 +85,8 @@ class Cases extends Controller
 
             DB::beginTransaction();
             $case->update($request->except('id' , 'certificate'));
-
+            $case->caseKeyword()->sync($request->input('keywords'));
+            $case->caseSkill()->sync($request->input('skills'));
 
             if($request->hasFile('id') && $request->hasFile('certificate')){
                 $case->clearMediaCollection('case');
@@ -108,7 +111,7 @@ class Cases extends Controller
      */
     public function destroy(string $id)
     {
-        $case = ModelsCases::where('user_id' , auth()->guard('api')->id())->where('id' , $id)->first();
+        $case = ModelsCases::find($id);
 
         if(!$case){
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
@@ -119,6 +122,13 @@ class Cases extends Controller
         }
 
         $case->delete();
+        DB::table('case_keyword')
+            ->where('case_id', $case->id)
+            ->update(['case_keyword.deleted_at' => now()]);
+
+        DB::table('case_skill')
+            ->where('case_id', $case->id)
+            ->update(['case_skill.deleted_at' => now()]);
 
         return $this->success(status: Response::HTTP_OK, message: 'Cases Deleted Successfully.', data: $case);
 

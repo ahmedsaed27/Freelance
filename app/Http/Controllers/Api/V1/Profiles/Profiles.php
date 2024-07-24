@@ -25,7 +25,7 @@ class Profiles extends Controller
      */
     public function index()
     {
-        $profile = ProfilesModel::with('user', 'socials', 'workExperiences', 'education')->paginate(10);
+        $profile = ProfilesModel::with('user', 'socials', 'workExperiences', 'education' , 'profileType' , 'currency' , 'country' , 'city')->paginate(10);
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: $profile);
     }
@@ -41,17 +41,20 @@ class Profiles extends Controller
 
             $profile = ProfilesModel::create([
                 'user_id' => auth()->guard('api')->id(),
-                'location' => $request->location,
+                'address' => $request->address,
                 'areas_of_expertise' => $request->areas_of_expertise,
                 'hourly_rate' => $request->hourly_rate,
                 'years_of_experience' => $request->years_of_experience,
                 'type' => $request->type,
                 'career' => $request->career,
-                'countries_id' => $request->countries_id,
-                'cities_id' => $request->cities_id,
+                'country_id' => $request->country_id,
+                'city_id' => $request->city_id,
+                'currency_id' => $request->currency_id,
                 'specialization' => $request->specialization,
-                'experience' => $request->experience,
+                'level' => $request->level,
             ]);
+
+            $profile->profileType()->sync($request->input('types'));
 
             $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
             $profile->addMediaFromRequest('union_card')->toMediaCollection('profiles', 'profiles');
@@ -114,7 +117,7 @@ class Profiles extends Controller
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
         }
 
-        $profile->load('user' , 'user', 'socials', 'workExperiences', 'education');
+        $profile->load('user' , 'user', 'socials', 'workExperiences', 'education' , 'profileType' , 'currency' , 'country' , 'city');
         $profile->getMedia('profiles');
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: [
@@ -141,9 +144,11 @@ class Profiles extends Controller
 
             // Update profile attributes
             $profile->update($request->only([
-                'location', 'areas_of_expertise', 'hourly_rate', 'years_of_experience',
-                'type', 'career', 'countries_id', 'cities_id', 'specialization', 'experience'
+                'address', 'areas_of_expertise', 'hourly_rate', 'years_of_experience', 'currency_id',
+                'type', 'career', 'country_id', 'city_id', 'specialization', 'level'
             ]));
+
+            $profile->profileType()->sync($request->input('types'));
 
             // Update media
             $this->updateMedia($profile, $request);
@@ -250,6 +255,9 @@ class Profiles extends Controller
 
             // Finally, delete the profile
             $profile->delete();
+            DB::table('profile_type')
+            ->where('profile_id', $profile->id)
+            ->update(['profile_type.deleted_at' => now()]);
 
             DB::commit();
 
@@ -276,6 +284,53 @@ class Profiles extends Controller
             'status' => false,
         ], Response::HTTP_OK);
 
+    }
+
+
+    public function restore(string $id)
+    {
+        $data = ProfilesModel::withTrashed()->find($id);
+
+        if (!$data) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: 'Type not found.'
+            );
+        }
+
+        if (!$data->trashed()) {
+
+            return $this->error(
+                status: Response::HTTP_BAD_REQUEST,
+                message: 'Type not found.'
+            );
+        }
+
+        $data->restore();
+        $data->education()->withTrashed()->restore();
+        $data->workExperiences()->withTrashed()->restore();
+        $data->socials()->withTrashed()->restore();
+
+        DB::table('profile_type')
+        ->where('profile_id', $data->id)
+        ->update(['profile_type.deleted_at' => null]);
+
+
+        return $this->success(
+            status:Response::HTTP_OK
+            ,message: 'Type restored successfully.'
+            , data: $data
+        );
+    }
+
+    public function getAllTrashedData(){
+        $data = ProfilesModel::onlyTrashed()->paginate(10);
+
+        return $this->successPaginated(
+            status:Response::HTTP_OK
+            , message:'Type Retrived Succesfuly'
+            , data: $data
+        );
     }
 
 }

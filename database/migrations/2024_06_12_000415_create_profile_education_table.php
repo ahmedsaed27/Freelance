@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('countries_id');
 
             $table->longText('additional_information')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

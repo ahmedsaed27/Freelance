@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('profiles_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
 
-            
+
             $table->string('job_name');
             $table->unsignedBigInteger('countries_id');
             $table->enum('section' , ['personal_status']);
@@ -30,6 +30,7 @@ return new class extends Migration
 
             $table->date('from');
             $table->date('to');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

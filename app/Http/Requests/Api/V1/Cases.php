@@ -24,22 +24,35 @@ class Cases extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'required_skills' => 'sometimes',
+        $rules = [
+            'skills' => 'required|array',
+            'skills.*' => 'exists:skills,id',
+            'keywords' => 'required|array',
+            'keywords.*' => 'exists:keywords,id',
+            'type_id' => 'required|exists:types,id',
             'is_visible' => 'required|boolean',
-            'freelance_type' => 'required|string',
             'title' => 'required|string',
             'specialization' => 'required|string',
-            'proposed_budget' => 'required|numeric',
-            'keywords' => 'required|array',
-            'countries_id'=> 'required|exists:user_db.countries,id',
-            'cities_id' => 'required|exists:user_db.cities,id',
-            'notes' => 'required|string',
-            'currency' => 'required|string',
-            'id' => 'required|image',
-            'certificate' => 'required|file|mimes:pdf'
+            'currency_id' => 'required|exists:currencies,id',
+            'min_amount' => 'required|numeric',
+            'max_amount' => 'required|numeric',
+            'country_id' => 'required|exists:user_db.countries,id',
+            'city_id' => 'required|exists:user_db.cities,id',
+            'description' => 'required|string',
+            'status' => 'required|in:Opened,Assigned'
         ];
+
+        if ($this->isMethod('post')) {
+            $rules['id'] = 'required|image';
+            $rules['certificate'] = 'required|file|mimes:pdf';
+        } elseif ($this->isMethod('put') || $this->isMethod('patch')) {
+            $rules['id'] = 'nullable|image';
+            $rules['certificate'] = 'nullable|file|mimes:pdf';
+        }
+
+        return $rules;
     }
+
 
 
     protected function failedValidation(Validator $validator)

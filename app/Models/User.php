@@ -58,11 +58,6 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
         return $this->hasMany(Cases::class , 'user_id');
     }
 
-    public function receive(){
-        return $this->belongsToMany(Cases::class , 'cases_users' , 'user_id' , 'cases_id')
-        ->withTimestamps();
-    }
-
     public function verification(){
         return $this->hasOne(Verification::class , 'user_id');
     }

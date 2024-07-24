@@ -4,29 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Cases extends Model implements HasMedia
 {
-    use HasFactory , InteractsWithMedia;
+    use HasFactory , InteractsWithMedia , SoftDeletes;
 
     protected $table = 'cases';
 
     protected $fillable = [
         'user_id' ,
-        'notes'  ,
+        'description',
         'is_visible',
-        'freelance_type',
-        'countries_id',
-        'cities_id',
+        'currency_id',
+        'country_id',
+        'city_id',
         'title',
         'specialization',
         'proposed_budget',
-        'currency',
-        'keywords',
-        'required_skills'
+        'min_amount',
+        'max_amount',
+        'type_id',
+        'status'
     ];
 
     protected $appends = ['conversion_urls'];
@@ -53,11 +55,26 @@ class Cases extends Model implements HasMedia
 
 
     public function countrie(){
-        return $this->belongsTo(Country::class , 'countries_id');
+        return $this->belongsTo(Country::class , 'country_id');
     }
     public function city(){
-        return $this->belongsTo(Cities::class , 'cities_id');
+        return $this->belongsTo(Cities::class , 'city_id');
     }
+
+    public function caseKeyword(){
+        return $this->belongsToMany(keyword::class , 'case_keyword' , 'case_id' , 'keyword_id')
+        ->withTimestamps()
+        ->withTrashed()
+        ->wherePivotNull('deleted_at');
+    }
+
+    public function caseSkill(){
+        return $this->belongsToMany(Skill::class , 'case_skill' , 'case_id' , 'skill_id')
+        ->withTimestamps()
+        ->withTrashed()
+        ->wherePivotNull('deleted_at');
+    }
+
 
     public function registerMediaConversions(Media $media = null): void
     {

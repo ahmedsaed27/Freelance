@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cases_users', function (Blueprint $table) {
+        Schema::create('booking', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-
-            $table->bigInteger('user_id')->index();
-            // $table->bigInteger('cases_id')->index();
-
-            $table->foreignId('cases_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-
-
+            $table->date('date');
+            $table->time('time');
+            $table->longText('description');
+            $table->string('status');
+            $table->unsignedBigInteger('user_id')->index();
             $table->timestamps();
         });
     }
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cases_users');
+        Schema::dropIfExists('booking');
     }
 };

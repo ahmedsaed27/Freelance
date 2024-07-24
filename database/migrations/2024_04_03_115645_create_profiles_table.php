@@ -14,21 +14,21 @@ return new class extends Migration
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->index();
-            $table->tinyInteger('type')->comment('1 => Translators , 2 => Accountant , 2 => Lawyer');
-            $table->longText('location');
+            $table->longText('address');
             $table->json('areas_of_expertise');
             $table->integer('hourly_rate');
+            $table->foreignId('currency_id')->constrained('currencies' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
             $table->tinyInteger('years_of_experience');
             $table->string('career');
 
             /****************************** New Data ******************************/
-            $table->unsignedBigInteger('countries_id');
-            $table->unsignedBigInteger('cities_id');
-            $table->enum('field' , ['appeal']);
-            $table->enum('specialization' , ['appeal']);
-            $table->enum('experience' , ['boss'  , 'expert' , 'mid_level' , 'junior' , 'student']);
+            $table->unsignedBigInteger('country_id');
+            $table->unsignedBigInteger('city_id');
+            $table->enum('field' , ['appeal'])->default('appeal');
+            $table->enum('specialization' , ['appeal'])->default('appeal');
+            $table->enum('level' , ['boss'  , 'expert' , 'mid_level' , 'junior' , 'student'])->default('mid_level');
 
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }
