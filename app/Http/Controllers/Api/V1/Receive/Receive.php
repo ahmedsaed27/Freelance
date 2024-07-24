@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Receive;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Receive as V1Receive;
+use App\Models\CasesProfile;
 use App\Models\CasesUsers;
 use App\Models\Profiles;
 use App\Models\User;
@@ -20,12 +21,12 @@ class Receive extends Controller
      */
     public function index()
     {
-        $profile_receive = Profiles::with('receive')->paginate(10);
-        return $this->success(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->paginate(10);
+        return $this->successPaginated(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
     }
 
     public function getAllDataWithoutPaginate(){
-        $profile_receive = Profiles::with('receive')->get();
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->get();
         return $this->success(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
     }
 
@@ -34,7 +35,8 @@ class Receive extends Controller
      */
     public function store(V1Receive $request)
     {
-        $pivotData = $request->only(['suggested_rate', 'description', 'status', 'estimation_time']);
+        $pivotData = $request->only(['suggested_rate', 'description', 'estimation_time' , 'currency_id']);
+        $pivotData['status'] = 'Pending';
 
         $user = auth()->guard('api')->user();
         $profile = $user->profile;
@@ -62,7 +64,6 @@ class Receive extends Controller
             'data' => $profile->receive()->wherePivot('case_id', $request->caseId)->first(),
         ], Response::HTTP_OK);
 
-        // return $this->success(status: Response::HTTP_OK, message: 'User received the case successfully.', data: $receive);
     }
 
     /**
@@ -71,21 +72,39 @@ class Receive extends Controller
     public function show(string $id)
     {
 
-        $user_receive = CasesUsers::with('user' , 'user.receive' , 'cases' , 'cases.city')->where('id' , $id)->first();
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->find($id);
 
-        if (!$user_receive) {
+        if (!$profile_receive) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'received not found.',);
         }
 
-        return $this->success(status: Response::HTTP_OK, message: 'User received the case successfully.', data: $user_receive);
+        return $this->success(status: Response::HTTP_OK, message: 'Profile received the case successfully.', data: $profile_receive);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(V1Receive $request, string $id)
     {
-       //
+        $data = CasesProfile::find($id);
+
+        if(!$data){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'received not found.',);
+        }
+
+        $profile = auth()->guard('api')->user()?->profile;
+
+        if(!$profile){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'The User Dosnt Have Any Profile.',);
+        }
+
+        if($data->profile_id != $profile->id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Profile Owner Can Be Update Data.',);
+        }
+
+        $data->update($request->except('status'));
+
+        return $this->success(status: Response::HTTP_OK, message: 'received the case Updated successfully.', data: $data);
     }
 
     /**
@@ -93,15 +112,66 @@ class Receive extends Controller
      */
     public function destroy(string $id)
     {
-        $user_receive = DB::table('cases_users')->where('id' , $id)->where('user_id' , auth()->guard('api')->id())->first();
+        $data = CasesProfile::find($id);
 
-        if (!$user_receive) {
+        if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'received not found.',);
         }
 
-        $user_receive->delete();
+        $profile = auth()->guard('api')->user()?->profile;
 
-        return $this->success(status: Response::HTTP_OK, message: 'User received Delete successfully.', data: $user_receive);
+        if(!$profile){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'The User Dosnt Have Any Profile.',);
+        }
+
+        if($data->profile_id != $profile->id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Profile Owner Can Be Delete Data.',);
+        }
+
+        $data->delete();
+
+        return $this->success(status: Response::HTTP_OK, message: 'User received Delete successfully.', data: $data);
 
     }
+
+
+    public function restore(string $id)
+    {
+        $data = CasesProfile::withTrashed()->find($id);
+
+        if (!$data) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: 'Case Profile not found.'
+            );
+        }
+
+        if (!$data->trashed()) {
+
+            return $this->error(
+                status: Response::HTTP_BAD_REQUEST,
+                message: 'Case Profile not found.'
+            );
+        }
+
+        $data->restore();
+
+        return $this->success(
+            status:Response::HTTP_OK
+            ,message: 'Case Profile restored successfully.'
+            , data: $data
+        );
+    }
+
+    public function getAllTrashedData(){
+        $data = CasesProfile::onlyTrashed()->paginate(10);
+
+        return $this->successPaginated(
+            status:Response::HTTP_OK
+            , message:'Case Profile Retrived Succesfuly'
+            , data: $data
+        );
+    }
+
+
 }

@@ -10,7 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-
+use Spatie\Activitylog\Models\Activity;
 
 class BookingController extends Controller
 {
@@ -23,7 +23,42 @@ class BookingController extends Controller
     {
         $data = Booking::with('user')->paginate(10);
 
-        return $this->success(status:Response::HTTP_OK , message:'Bookings Retrieved Successfuly' , data: $data);
+        return $this->successPaginated(status:Response::HTTP_OK , message:'Bookings Retrieved Successfuly' , data: $data);
+    }
+
+    public function getAllDataWithoutPaginate(){
+        $data = Booking::with('user')->get();
+
+        return $this->success(status: Response::HTTP_OK, message: 'Bookings Retrieved Successfully.', data: $data);
+    }
+
+    public function getLogs(string $id){
+        $data = Booking::find($id);
+
+        if(!$data){
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "Sorry, the requested data was not found."
+            );
+        }
+
+        $logs = Activity::where('subject_id', $data->id)
+                        ->where('subject_type', Booking::class)
+                        ->get();
+
+        if ($logs->isEmpty()) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "No logs found for the specified Booking."
+            );
+        }
+
+
+        return $this->success(
+            status:Response::HTTP_OK
+            , message:'Logs Retrived Succesfuly'
+            , data:  $logs
+        );
     }
 
     /**
@@ -112,5 +147,43 @@ class BookingController extends Controller
         $data->delete();
 
         return $this->success(status:Response::HTTP_OK , message:'Booking Deleted Successfuly' , data: $data);
+    }
+
+    public function restore(string $id)
+    {
+        $data = Booking::withTrashed()->find($id);
+
+        if (!$data) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: 'Booking not found.'
+            );
+        }
+
+        if (!$data->trashed()) {
+
+            return $this->error(
+                status: Response::HTTP_BAD_REQUEST,
+                message: 'Booking not found.'
+            );
+        }
+
+        $data->restore();
+
+        return $this->success(
+            status:Response::HTTP_OK
+            ,message: 'Document restored successfully.'
+            , data: $data
+        );
+    }
+
+    public function getAllTrashedData(){
+        $data = Booking::onlyTrashed()->paginate(10);
+
+        return $this->successPaginated(
+            status:Response::HTTP_OK
+            , message:'Booking Retrived Succesfuly'
+            , data: $data
+        );
     }
 }

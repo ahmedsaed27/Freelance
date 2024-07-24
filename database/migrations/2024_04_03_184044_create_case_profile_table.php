@@ -26,6 +26,10 @@ return new class extends Migration
 
             $table->date('estimation_time');
 
+            $table->foreignId('currency_id')->constrained('currencies' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+
+            $table->softDeletes();
+
             $table->timestamps();
         });
     }

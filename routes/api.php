@@ -45,12 +45,23 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
 
     Route::apiResource('profile' , Profiles::class)->except('index' , 'show');
     Route::post('profile/restore/{id}' , [Profiles::class , 'restore']);
+    Route::get('user-profile' ,  [Profiles::class , 'getUserProfile']);
 
     Route::get('check/profile' , [Profiles::class , 'userHaveProfile']);
+
     Route::apiResource('case' , Cases::class);
     Route::get('cases/detail' , [Cases::class , 'getCaseByToken']);
+    Route::get('case/get/all' , [Cases::class , 'getAllDataWithoutPaginate']);
+    Route::get('case/trashed/all', [Cases::class, 'getAllTrashedData']);
+    Route::post('case/logs/{id}' , [Cases::class , 'getLogs']);
+    Route::post('case/restore/{id}' , [Cases::class , 'restore']);
 
-    Route::apiResource('receive' , Receive::class)->except('update');
+    Route::apiResource('receive' , Receive::class);
+    Route::get('receive/get/all' , [Receive::class , 'getAllDataWithoutPaginate']);
+    Route::get('receive/trashed/all', [Receive::class, 'getAllTrashedData']);
+    Route::post('receive/logs/{id}' , [Receive::class , 'getLogs']);
+    Route::post('receive/restore/{id}' , [Receive::class , 'restore']);
+
     Route::apiResource('docs' , Documents::class);
 
     Route::apiResource('booking' , BookingController::class);

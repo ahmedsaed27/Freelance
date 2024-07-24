@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use \Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 class Cases extends Controller
 {
@@ -21,7 +22,42 @@ class Cases extends Controller
     {
         $cases = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill')->paginate(10);
 
-        return $this->success(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
+        return $this->successPaginated(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
+    }
+
+    public function getAllDataWithoutPaginate(){
+        $data = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill')->get();
+
+        return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $data);
+    }
+
+    public function getLogs(string $id){
+        $data = ModelsCases::find($id);
+
+        if(!$data){
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "Sorry, the requested data was not found."
+            );
+        }
+
+        $logs = Activity::where('subject_id', $data->id)
+                        ->where('subject_type', ModelsCases::class)
+                        ->get();
+
+        if ($logs->isEmpty()) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "No logs found for the specified Case."
+            );
+        }
+
+
+        return $this->success(
+            status:Response::HTTP_OK
+            , message:'Logs Retrived Succesfuly'
+            , data:  $logs
+        );
     }
 
     /**
@@ -83,6 +119,10 @@ class Cases extends Controller
                 return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
             }
 
+            if($case->user_id != auth()->guard('api')->id()){
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Created The Case Can Update It.',);
+            }
+
             DB::beginTransaction();
             $case->update($request->except('id' , 'certificate'));
             $case->caseKeyword()->sync($request->input('keywords'));
@@ -117,6 +157,10 @@ class Cases extends Controller
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
         }
 
+        if($case->user_id != auth()->guard('api')->id()){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Created The Case Can Delete It.',);
+        }
+
         if($case->getMedia('case')){
             $case->clearMediaCollection('case');
         }
@@ -144,5 +188,44 @@ class Cases extends Controller
         }
 
         return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $case);
+    }
+
+
+    public function restore(string $id)
+    {
+        $data = ModelsCases::withTrashed()->find($id);
+
+        if (!$data) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: 'Case not found.'
+            );
+        }
+
+        if (!$data->trashed()) {
+
+            return $this->error(
+                status: Response::HTTP_BAD_REQUEST,
+                message: 'Case not found.'
+            );
+        }
+
+        $data->restore();
+
+        return $this->success(
+            status:Response::HTTP_OK
+            ,message: 'Case restored successfully.'
+            , data: $data
+        );
+    }
+
+    public function getAllTrashedData(){
+        $data = ModelsCases::onlyTrashed()->paginate(10);
+
+        return $this->successPaginated(
+            status:Response::HTTP_OK
+            , message:'Case Retrived Succesfuly'
+            , data: $data
+        );
     }
 }

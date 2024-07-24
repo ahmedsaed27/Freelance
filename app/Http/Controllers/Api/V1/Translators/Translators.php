@@ -19,7 +19,7 @@ class Translators extends Controller
     {
         $Translators = TranslatorsModel::with('media')->paginate(10);
 
-        return $this->success(status:Response::HTTP_OK , message:'Translators Retrieved Successfully.' , data:$Translators);
+        return $this->successPaginated(status:Response::HTTP_OK , message:'Translators Retrieved Successfully.' , data:$Translators);
     }
 
     /**
@@ -27,8 +27,7 @@ class Translators extends Controller
      */
     public function store(TranslatorsRequest $request)
     {
-        
-        TranslatorsModel::create($request->except(''));
+        //
     }
 
     /**

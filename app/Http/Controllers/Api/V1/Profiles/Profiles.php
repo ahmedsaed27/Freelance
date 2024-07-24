@@ -333,4 +333,16 @@ class Profiles extends Controller
         );
     }
 
+    public function getUserProfile(){
+        $profile = auth()->guard('api')->user()?->profile;
+
+        if(!$profile){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'User Dosnt Have Any Profile.',);
+        }
+
+        $profile->load('user', 'socials', 'workExperiences', 'education' , 'profileType' , 'currency' , 'country' , 'city');
+
+        return $this->success(status: Response::HTTP_OK, message: 'Profile received successfully.', data: $profile);
+
+    }
 }

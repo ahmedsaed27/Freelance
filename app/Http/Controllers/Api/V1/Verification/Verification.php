@@ -21,7 +21,7 @@ class Verification extends Controller
     {
         $verification = VerificationModel::with('user')->paginate(10);
 
-        return $this->success(status:Response::HTTP_OK , message:'verifications Retrieved Successfully.' , data:$verification);
+        return $this->successPaginated(status:Response::HTTP_OK , message:'verifications Retrieved Successfully.' , data:$verification);
     }
 
     /**
@@ -42,8 +42,6 @@ class Verification extends Controller
 
             $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
 
-            $verification->getMedia('verifications');
-
             return $this->success(status:Response::HTTP_OK , message:'verifications Created Successfully.' , data:$verification);
 
         }catch(Exception $e){
@@ -59,13 +57,11 @@ class Verification extends Controller
      */
     public function show(string $id)
     {
-        $verifications = VerificationModel::with('user')->where('user_id' , auth()->guard('api')->id())->first();
+        $verifications = VerificationModel::with('user')->find($id);
 
         if (!$verifications) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
         }
-
-        $verifications->getMedia('verifications');
 
         return $this->success(status: Response::HTTP_OK, message: 'verifications Retrieved Successfully.', data: [
             'verifications' => $verifications,
@@ -75,21 +71,27 @@ class Verification extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(VerificatioRequest $request, string $id)
     {
-        $verification = VerificationModel::where('user_id' , auth()->guard('api')->id())->first();
+        $verification = VerificationModel::find($id);
 
         if (!$verification) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
         }
 
+        if($verification->user_id != auth()->guard('api')->id()){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Create The verification Can Update.',);
+        }
+
         $verification->update($request->except('attachments'));
 
 
-        $verification->clearMediaCollection('verifications');
-        $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
+        if($request->hasFile('attachments')){
+            $verification->clearMediaCollection('verifications');
+            $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
+        }
 
-        $verification->getMedia('verifications');
+
 
         return $this->success(status: Response::HTTP_OK, message: 'verification Updated Successfully.', data: [
             'profile' => $verification,
@@ -101,12 +103,21 @@ class Verification extends Controller
      */
     public function destroy(string $id)
     {
-        $profile = VerificationModel::where('user_id' , auth()->guard('api')->id())->first();
+        $verification = VerificationModel::find($id);
 
-        $profile->clearMediaCollection('verifications');
 
-        $profile->delete();
+        if (!$verification) {
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
+        }
 
-        return $this->success(status: Response::HTTP_OK, message: 'verification Deleted Successfully.',data:$profile);
+        if($verification->user_id != auth()->guard('api')->id()){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Create The verification Can Update.',);
+        }
+
+        $verification->clearMediaCollection('verifications');
+
+        $verification->delete();
+
+        return $this->success(status: Response::HTTP_OK, message: 'verification Deleted Successfully.',data:$verification);
     }
 }

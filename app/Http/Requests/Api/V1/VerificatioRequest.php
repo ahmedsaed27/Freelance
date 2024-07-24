@@ -24,11 +24,18 @@ class VerificatioRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'attachments' => 'required|mimes:pdf',
+        $rules = [
             'national_id' => 'required|numeric|min:14',
             'type' => 'required|numeric'
         ];
+
+        if($this->method() == 'POST'){
+            $rules['attachments'] = 'required|mimes:pdf';
+        }else{
+            $rules['attachments'] = 'sometimes|mimes:pdf';
+        }
+
+        return $rules;
     }
 
     protected function failedValidation(Validator $validator)

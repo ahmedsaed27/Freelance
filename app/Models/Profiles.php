@@ -91,7 +91,7 @@ class Profiles extends Model implements HasMedia
 
     public function receive(){
         return $this->belongsToMany(Cases::class , 'case_profile' , 'profile_id' , 'case_id')
-        ->withPivot('suggested_rate', 'description', 'status', 'estimation_time')
+        ->withPivot('suggested_rate', 'description', 'estimation_time' , 'currency_id')
         ->withTimestamps();
     }
 
