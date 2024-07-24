@@ -53,6 +53,14 @@ return [
             'throw' => false,
         ],
 
+        'trashed' => [
+            'driver' => 'local',
+            'root' => public_path('trashed'),
+            'url' => env('APP_URL').'/trashed',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'certificates' => [
             'driver' => 'local',
             'root' => public_path('certificates'),

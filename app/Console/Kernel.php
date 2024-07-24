@@ -13,6 +13,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+
+        $schedule->command('trashFiles:delete')->monthlyOn(1, '00:00');
+        // * * * * * php /path-to-your-project/artisan schedule:run >> /dev/null 2>&1  cron job lunix command
     }
 
     /**
