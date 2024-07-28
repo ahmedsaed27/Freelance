@@ -53,6 +53,22 @@ return [
             'throw' => false,
         ],
 
+        'profile_case_note' => [
+            'driver' => 'local',
+            'root' => public_path('profiles_case_note'),
+            'url' => env('APP_URL').'/profiles_case_note',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'worked_case_notes' => [
+            'driver' => 'local',
+            'root' => public_path('worked_case_notes'),
+            'url' => env('APP_URL').'/worked_case_notes',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'trashed' => [
             'driver' => 'local',
             'root' => public_path('trashed'),

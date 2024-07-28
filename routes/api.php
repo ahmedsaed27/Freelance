@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Auth\Auth as AuthController;
 use App\Http\Controllers\Api\V1\Booking\BookingController;
+use App\Http\Controllers\Api\V1\CaseProfileNotes\CaseProfileNotesController;
 use App\Http\Controllers\Api\V1\Cases\Cases;
 use App\Http\Controllers\Api\V1\Currency\CurrencyController;
 use App\Http\Controllers\Api\V1\Documents\Documents;
@@ -13,6 +14,8 @@ use App\Http\Controllers\Api\V1\Receive\Receive;
 use App\Http\Controllers\Api\V1\Skills\SkillsController;
 use App\Http\Controllers\Api\V1\Types\TypesController;
 use App\Http\Controllers\Api\V1\Verification\Verification;
+use App\Http\Controllers\Api\V1\WorkedCaseNotes\WorkedCaseNotesController;
+use App\Http\Controllers\Api\V1\WorkedCases\WorkedCasesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -91,6 +94,24 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::get('keywords/trashed/all', [KeywordsController::class, 'getAllTrashedData']);
     Route::post('keywords/logs/{id}' , [KeywordsController::class , 'getLogs']);
     Route::post('keywords/restore/{id}' , [KeywordsController::class , 'restore']);
+
+    Route::apiResource('case/profile/note' , CaseProfileNotesController::class);
+    Route::get('case/profile/note/get/all' , [CaseProfileNotesController::class , 'getAllDataWithoutPaginate']);
+    Route::get('case/profile/note/trashed/all', [CaseProfileNotesController::class, 'getAllTrashedData']);
+    Route::post('case/profile/note/logs/{id}' , [CaseProfileNotesController::class , 'getLogs']);
+    Route::post('case/profile/note/restore/{id}' , [CaseProfileNotesController::class , 'restore']);
+
+    Route::apiResource('worked/case' , WorkedCasesController::class);
+    Route::get('worked/case/get/all' , [WorkedCasesController::class , 'getAllDataWithoutPaginate']);
+    Route::get('worked/case/trashed/all', [WorkedCasesController::class, 'getAllTrashedData']);
+    Route::post('worked/case/logs/{id}' , [WorkedCasesController::class , 'getLogs']);
+    Route::post('worked/case/restore/{id}' , [WorkedCasesController::class , 'restore']);
+
+    Route::apiResource('worked/case-notes' , WorkedCaseNotesController::class);
+    Route::get('worked/case-notes/get/all' , [WorkedCaseNotesController::class , 'getAllDataWithoutPaginate']);
+    Route::get('worked/case-notes/trashed/all', [WorkedCaseNotesController::class, 'getAllTrashedData']);
+    Route::post('worked/case-notes/logs/{id}' , [WorkedCaseNotesController::class , 'getLogs']);
+    Route::post('worked/case-notes/restore/{id}' , [WorkedCaseNotesController::class , 'restore']);
 
     /******************************** Papers Api *******************************/
 
