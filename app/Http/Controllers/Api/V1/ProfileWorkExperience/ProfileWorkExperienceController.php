@@ -77,26 +77,14 @@ class ProfileWorkExperienceController extends Controller
 
             DB::beginTransaction();
 
-            $workExperiences = $request->validated()['work_experience'];
+            $request->merge([
+                'profile_id' => $profile->id,
+            ]);
 
-            foreach ($workExperiences as $index => $workExperience) {
-                $profileWorkExperience = ProfileWorkExperience::create([
-                    'profile_id' => $profile->id,
-                    'company' => $workExperience['company'],
-                    'job_title' => $workExperience['job_title'],
-                    'country_id' => $workExperience['country_id'],
-                    'job_type' => $workExperience['job_type'],
-                    'work_place' => $workExperience['work_place'],
-                    'responsibilities' => $workExperience['responsibilities'],
-                    'career_level' => $workExperience['career_level'],
-                    'start_date' => $workExperience['start_date'],
-                    'end_date' => $workExperience['end_date'],
-                ]);
+            $profileWorkExperience = ProfileWorkExperience::create($request->except('certificate'));
 
-                // If there is a certificate in the request, add it to the media collection
-                if ($request->hasFile("work_experience.$index.certificate")) {
-                    $profileWorkExperience->addMediaFromRequest("work_experience.$index.certificate")->toMediaCollection('certificates', 'certificates');
-                }
+            if ($request->hasFile('certificate')) {
+                $profileWorkExperience->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();
@@ -137,26 +125,27 @@ class ProfileWorkExperienceController extends Controller
                 return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'ProfileWorkExperience not found.',);
             }
 
+            $user = auth()->guard('api')->user();
+            $profile = $user->profile;
+
+            if (!$profile) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'User Dosnt Have Profile.',);
+            }
+
+            if($profile->id != $data->profile_id){
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Profile Owner Can Update The Profile.',);
+            }
             DB::beginTransaction();
 
-            $workExperienceData = $request->validated()['work_experience'][0]; // Assuming you're updating a single work experience record
-
-            $data->update([
-                'company' => $workExperienceData['company'],
-                'job_title' => $workExperienceData['job_title'],
-                'country_id' => $workExperienceData['country_id'],
-                'job_type' => $workExperienceData['job_type'],
-                'work_place' => $workExperienceData['work_place'],
-                'responsibilities' => $workExperienceData['responsibilities'],
-                'career_level' => $workExperienceData['career_level'],
-                'start_date' => $workExperienceData['start_date'],
-                'end_date' => $workExperienceData['end_date'],
+            $request->merge([
+                'profile_id' => $profile->id,
             ]);
 
-            // If there is a certificate in the request, add or update it in the media collection
-            if ($request->hasFile("work_experience.0.certificate")) {
-                $data->clearMediaCollection('certificates'); // Clear existing certificates
-                $data->addMediaFromRequest("work_experience.0.certificate")->toMediaCollection('certificates', 'certificates');
+            $data->update($request->except('certificate'));
+
+            if ($request->hasFile('certificate')) {
+                $data->clearMediaCollection('certificates');
+                $data->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();

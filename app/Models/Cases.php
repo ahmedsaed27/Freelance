@@ -51,7 +51,7 @@ class Cases extends Model implements HasMedia
     }
 
     public function receive(){
-        return $this->belongsToMany(User::class , 'cases_users' , 'cases_id' , 'user_id')
+        return $this->belongsToMany(Profiles::class , 'case_profile' , 'case_id' , 'profile_id')
         ->withTimestamps();
     }
 

@@ -32,17 +32,17 @@ class ProfileWorkExperienceRequest extends FormRequest
 
         return [
             // work experience
-            'work_experience' => 'required|array',
-            'work_experience.*.company' => 'required|string',
-            'work_experience.*.job_title' => 'required|string',
-            'work_experience.*.country_id' => 'required|exists:user_db.countries,id',
-            'work_experience.*.job_type' => 'required|in:fullTime,partTime,freelance',
-            'work_experience.*.work_place' => 'required|in:office,house,flexible',
-            'work_experience.*.responsibilities' => 'required|string',
-            'work_experience.*.career_level' => 'required|in:boss,expert,mid_level,junior,student',
-            'work_experience.*.start_date' => 'required|date',
-            'work_experience.*.end_date' => 'required|date|after:work_experience.*.start_date',
-            'work_experience.*.certificate' => $certificateRules,
+            // 'work_experience' => 'required|array',
+            'company' => 'required|string',
+            'job_title' => 'required|string',
+            'country_id' => 'required|exists:user_db.countries,id',
+            'job_type' => 'required|in:fullTime,partTime,freelance',
+            'work_place' => 'required|in:office,house,flexible',
+            'responsibilities' => 'required|string',
+            'career_level' => 'required|in:boss,expert,mid_level,junior,student',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:work_experience.*.start_date',
+            'certificate' => $certificateRules,
         ];
     }
 

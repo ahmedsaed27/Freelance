@@ -66,6 +66,7 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::get('case/trashed/all', [Cases::class, 'getAllTrashedData']);
     Route::post('case/logs/{id}' , [Cases::class , 'getLogs']);
     Route::post('case/restore/{id}' , [Cases::class , 'restore']);
+    Route::get('cases/details' , [Cases::class , 'getAllUserCasesWithApplyers']);
 
     Route::apiResource('receive' , Receive::class);
     Route::get('receive/get/all' , [Receive::class , 'getAllDataWithoutPaginate']);

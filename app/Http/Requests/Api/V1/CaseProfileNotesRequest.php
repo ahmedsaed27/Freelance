@@ -26,12 +26,16 @@ class CaseProfileNotesRequest extends FormRequest
     public function rules()
     {
         return [
-            'case_profile_id' => 'required|exists:case_profile,id',
-            'created_by_user_id' => [
+            'case_profile_id' => [
                 'required',
-                'exists:user_db.users,id',
-                new UserBelongsToProfile($this->case_profile_id ,  $this->created_by_user_id),
+                'exists:case_profile,id',
+                new UserBelongsToProfile($this->case_profile_id , auth()->guard('api')->id())
             ],
+            // 'created_by_user_id' => [
+            //     'required',
+            //     'exists:user_db.users,id',
+                // new UserBelongsToProfile($this->case_profile_id ,  $this->created_by_user_id),
+            // ],
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:case_profile_notes,id',
             'files' => 'nullable|array',

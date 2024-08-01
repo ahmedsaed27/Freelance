@@ -79,27 +79,15 @@ class ProfileEducationController extends Controller
 
             DB::beginTransaction();
 
-            $educations = $request->validated()['education'];
+            $request->merge([
+                'profile_id' => $profile->id,
+            ]);
+            $profileEducations = ProfileEducation::create($request->except('certificate'));
 
-            foreach ($educations as $index => $education) {
-                $profileEducations = ProfileEducation::create([
-                    'profile_id' => $profile->id,
-                    'major' => $education['major'],
-                    'grade' => $education['grade'],
-                    'degree' => $education['degree'],
-                    'qualification' => $education['qualification'] ?? null,
-                    'university' => $education['university'],
-                    'country_id' => $education['country_id'],
-                    'additional_information' => $education['additional_information'] ?? null,
-                    'start_date' => $education['start_date'],
-                    'end_date' => $education['end_date'],
-                ]);
-
-                // If there is a certificate in the request, add it to the media collection
-                if ($request->hasFile("education.$index.certificate")) {
-                    $profileEducations->addMediaFromRequest("education.$index.certificate")->toMediaCollection('certificates', 'certificates');
-                }
+            if ($request->hasFile('certificate')) {
+                $profileEducations->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
             }
+
 
             DB::commit();
 
@@ -135,9 +123,7 @@ class ProfileEducationController extends Controller
             $data = ProfileEducation::find($id);
 
             if (!$data) {
-                return response()->json([
-                    'message' => 'ProfileEducation not found.'
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:'ProfileEducation not found.');
             }
 
             $user = auth()->guard('api')->user();
@@ -153,39 +139,21 @@ class ProfileEducationController extends Controller
 
             DB::beginTransaction();
 
-            $educationData = $request->validated()['education'][0]; // Assuming you're updating a single education record
+            $data->update($request->except('certificate'));
 
-            $data->update([
-                'major' => $educationData['major'],
-                'grade' => $educationData['grade'],
-                'degree' => $educationData['degree'],
-                'qualification' => $educationData['qualification'] ?? null,
-                'university' => $educationData['university'],
-                'country_id' => $educationData['country_id'],
-                'additional_information' => $educationData['additional_information'] ?? null,
-                'start_date' => $educationData['start_date'],
-                'end_date' => $educationData['end_date'],
-            ]);
-
-            // If there is a certificate in the request, add or update it in the media collection
-            if ($request->hasFile("education.0.certificate")) {
-                $data->clearMediaCollection('certificates'); // Clear existing certificates
-                $data->addMediaFromRequest("education.0.certificate")->toMediaCollection('certificates', 'certificates');
+            if ($request->hasFile('certificate')) {
+                $data->clearMediaCollection('certificates');
+                $data->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();
 
-            return response()->json([
-                'message' => 'ProfileEducation Updated Successfully.',
-                'data' => $data
-            ], Response::HTTP_OK);
+            return $this->success(status: Response::HTTP_OK, message: 'ProfileEducation Updated Successfully.', data:$data);
+
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to update ProfileEducation',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:$e->getMessage());
         }
     }
 
