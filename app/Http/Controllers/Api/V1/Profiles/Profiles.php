@@ -25,7 +25,8 @@ class Profiles extends Controller
      */
     public function index()
     {
-        $profile = ProfilesModel::with('user', 'socials', 'workExperiences', 'education' , 'profileType' , 'currency' , 'country' , 'city')->paginate(10);
+        // 'socials', 'workExperiences', 'education'
+        $profile = ProfilesModel::with('user' , 'profileType' , 'currency' , 'country' , 'city')->paginate(10);
 
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: $profile);
     }
@@ -52,47 +53,14 @@ class Profiles extends Controller
                 'currency_id' => $request->currency_id,
                 'specialization' => $request->specialization,
                 'level' => $request->level,
+                'field' => $request->field,
+                'status' => 'Under Review', // Automatically set status to 'Under Review' for POST requests
             ]);
 
             $profile->profileType()->sync($request->input('types'));
 
             $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
-            $profile->addMediaFromRequest('union_card')->toMediaCollection('profiles', 'profiles');
             $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
-
-
-            $profile->socials()->create($request->socials);
-
-            collect($request->education)->map(function ($data, $index) use ($profile) {
-                $education = $profile->education()->create([
-                    'qualification' => $data['qualification'],
-                    'university' => $data['university'],
-                    'specialization' => $data['specialization'],
-                    'countries_id' => $data['countries_id'],
-                    'additional_information' => $data['additional_information'],
-                ]);
-
-                $education->addMediaFromRequest("education.$index.certificate")->toMediaCollection('certificates', 'certificates');
-            });
-
-
-            collect($request->work_experience)->map(function ($data, $index) use ($profile) {
-                $education = $profile->workExperiences()->create([
-                    'job_name' => $data['job_name'],
-                    'countries_id' => $data['countries_id'],
-                    'section' => $data['section'],
-                    'specialization' => $data['specialization'],
-                    'job_type' => $data['job_type'],
-                    'work_place' => $data['work_place'],
-                    'responsibilities' => $data['responsibilities'],
-                    'career_level' => $data['career_level'],
-                    'from' => $data['from'],
-                    'to' => $data['to'],
-                ]);
-
-                $education->addMediaFromRequest("work_experience.$index.certificate")->toMediaCollection('certificates', 'certificates');
-            });
-
 
             DB::commit();
 
@@ -135,6 +103,7 @@ class Profiles extends Controller
 
             // Fetch the existing profile with related models
             $profile = ProfilesModel::with(['education', 'workExperiences', 'socials'])
+                ->where('user_id' , auth()->guard('api')->id())
                 ->where('id', $id)
                 ->first();
 
@@ -145,7 +114,7 @@ class Profiles extends Controller
             // Update profile attributes
             $profile->update($request->only([
                 'address', 'areas_of_expertise', 'hourly_rate', 'years_of_experience', 'currency_id',
-                'type', 'career', 'country_id', 'city_id', 'specialization', 'level'
+                'type', 'career', 'country_id', 'city_id', 'specialization', 'level' , 'status'
             ]));
 
             $profile->profileType()->sync($request->input('types'));
@@ -153,16 +122,6 @@ class Profiles extends Controller
             // Update media
             $this->updateMedia($profile, $request);
 
-            // Update socials
-            if ($profile->socials) {
-                $profile->socials()->update($request->socials);
-            }
-
-            // Batch update education
-            $this->updateRelatedRecords($profile->education, $request->education, 'education', 'qualification', 'certificates');
-
-            // Batch update work experiences
-            $this->updateRelatedRecords($profile->workExperiences, $request->work_experience, 'work_experience', 'job_name', 'certificates');
 
             DB::commit();
 
@@ -175,25 +134,39 @@ class Profiles extends Controller
 
     private function updateMedia($profile, $request)
     {
-        $mediaFiles = ['image', 'union_card', 'cv'];
-        $mediaUpdated = false;
+        // Get existing media
+        $existingMedia = $profile->getMedia('profiles');
+        // Handle image update
+        if ($request->hasFile('image')) {
+            // Find existing image media
+            $existingImageMedia = $existingMedia->where('mime_type' , 'image/png');
 
-        foreach ($mediaFiles as $file) {
-            if ($request->hasFile($file)) {
-                $mediaUpdated = true;
-                break;
+            if ($existingImageMedia) {
+                $existingImageMedia->each(function($q) use($profile){
+                    $profile->deleteMedia($q->id);
+                });
             }
+
+            // Add new image media
+            $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
         }
 
-        if ($mediaUpdated) {
-            $profile->clearMediaCollection('profiles');
-            foreach ($mediaFiles as $file) {
-                if ($request->hasFile($file)) {
-                    $profile->addMediaFromRequest($file)->toMediaCollection('profiles', 'profiles');
-                }
+        // Handle CV update
+        if ($request->hasFile('cv')) {
+            // Find existing CV media
+            $existingCvMedia = $existingMedia->where('mime_type' , 'application/pdf');
+
+            if ($existingCvMedia) {
+                $existingCvMedia->each(function($q) use($profile){
+                    $profile->deleteMedia($q->id);
+                });
             }
+
+            // Add new CV media
+            $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
         }
     }
+
 
     private function updateRelatedRecords($existingRecords, $newRecords, $requestKey, $uniqueKey, $mediaCollection)
     {

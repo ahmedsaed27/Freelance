@@ -31,7 +31,8 @@ class Profiles extends Model implements HasMedia
         'field',
         'specialization',
         'level',
-        'currency_id'
+        'currency_id',
+        'status'
     ];
 
     public $timestamps = true;
@@ -56,17 +57,22 @@ class Profiles extends Model implements HasMedia
     }
 
     public function socials(){
-        return $this->hasOne(ProfileSocials::class , 'profiles_id');
+        // return $this->hasOne(ProfileSocials::class , 'profiles_id');
+        return $this->belongsToMany(SocialMedia::class , 'profile_socials' , 'profile_id' , 'social_id')
+        ->withTimestamps()
+        ->withPivot([
+            'link'
+        ]);
     }
 
 
     public function workExperiences(){
-        return $this->hasMany(ProfileWorkExperience::class , 'profiles_id');
+        return $this->hasMany(ProfileWorkExperience::class , 'profile_id');
     }
 
 
     public function education(){
-        return $this->hasMany(ProfileEducation::class , 'profiles_id');
+        return $this->hasMany(ProfileEducation::class , 'profile_id');
     }
 
     public function city(){
@@ -123,6 +129,7 @@ class Profiles extends Model implements HasMedia
 
             if ($mimeType === 'application/pdf') {
                 $conversions[] = [
+                    'uuid' => $mediaItem->uuid,
                     'original' => $mediaItem->getUrl(),
                     'type' => 'pdf',
                 ];
@@ -134,6 +141,7 @@ class Profiles extends Model implements HasMedia
                 }
 
                 $conversions[] = [
+                    'uuid' => $mediaItem->uuid,
                     'original' => $mediaItem->getUrl(),
                     'type' => 'image',
                     'conversions' => $conversionUrls,

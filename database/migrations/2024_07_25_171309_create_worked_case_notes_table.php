@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('worked_case_notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('worked_case_id')->constrained('worked_cases' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->unsignedBigInteger('created_by_user_id');            $table->longText('content');
-            $table->foreignId('parent_id')->nullable()->constrained('worked_case_notes' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('worked_case_id')->constrained('worked_cases', 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->unsignedBigInteger('created_by_user_id');
+            $table->longText('content');
+            $table->foreignId('parent_id')->nullable()->constrained('worked_case_notes', 'id')->cascadeOnDelete()->cascadeOnUpdate();
             $table->softDeletes();
             $table->timestamps();
         });

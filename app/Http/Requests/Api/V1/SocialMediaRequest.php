@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class Docs extends FormRequest
+class SocialMediaRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,11 +25,8 @@ class Docs extends FormRequest
     public function rules(): array
     {
         return [
-            // 'attachments' => 'required|file|size:5120',
-            'attachments' => 'required|file',
-            'expected_price' => 'required|numeric',
-            'demo_file' => 'required|file|mimes:pdf',
-            'final_file' => 'required|file|mimes:pdf',
+            'name' => 'required|unique:social_media,name,'.$this->social,
+            'icon' => 'required|image'
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Enums\Api\V1\Types;
+use App\Models\Profiles as ModelsProfiles;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -80,15 +81,13 @@ class Profiles extends FormRequest
 
     public function rules(): array
     {
-        $imageRules = ['image'];
+        $imageRules = ['sometimes','image'];
         $cvRules = ['mimes:pdf'];
-        $unionCardRules = ['image'];
         $certificateRules = ['file', 'mimes:pdf'];
 
         if ($this->isMethod('post')) {
             array_unshift($imageRules, 'required');
             array_unshift($cvRules, 'required');
-            array_unshift($unionCardRules, 'required');
             array_unshift($certificateRules, 'required');
         }
 
@@ -99,7 +98,6 @@ class Profiles extends FormRequest
             'hourly_rate' => 'required|numeric',
             'image' => $imageRules,
             'cv' => $cvRules,
-            'union_card' => $unionCardRules,
             'years_of_experience' => 'required|numeric',
             'types' => 'required|array',
             'types.*' => 'exists:types,id',
@@ -110,35 +108,20 @@ class Profiles extends FormRequest
             'field' => 'required|in:appeal',
             'specialization' => 'required|in:appeal',
             'level' => 'required|in:boss,expert,mid_level,junior,student',
-
-            // socials
-            'socials' => 'required|array',
-            'socials.instagram' => 'required|url',
-            'socials.linkedin' => 'required|url',
-            'socials.facebook' => 'required|url',
-
-            // education
-            'education' => 'required|array',
-            'education.*.qualification' => 'required|string',
-            'education.*.university' => 'required|string',
-            'education.*.specialization' => 'required|in:appeal',
-            'education.*.countries_id' => 'required|exists:user_db.cities,id',
-            'education.*.additional_information' => 'nullable',
-            'education.*.certificate' => $certificateRules,
+            'status' => 'sometimes|in:Under Review,Approved,Rejected',
 
             // work experience
-            'work_experience' => 'required|array',
-            'work_experience.*.job_name' => 'required|string',
-            'work_experience.*.countries_id' => 'required|exists:user_db.cities,id',
-            'work_experience.*.section' => 'required|in:personal_status',
-            'work_experience.*.specialization' => 'required|in:civil_law',
-            'work_experience.*.job_type' => 'required|in:fullTime,partTime,freelance',
-            'work_experience.*.work_place' => 'required|in:office,house,flexible',
-            'work_experience.*.responsibilities' => 'required|string',
-            'work_experience.*.career_level' => 'required|in:boss,expert,mid_level,junior,student',
-            'work_experience.*.from' => 'required|date',
-            'work_experience.*.to' => 'required|date|after:work_experience.*.from',
-            'work_experience.*.certificate' => $certificateRules,
+            // 'work_experience' => 'required|array',
+            // 'work_experience.*.company' => 'required|string',
+            // 'work_experience.*.job_title' => 'required|string',
+            // 'work_experience.*.country_id' => 'required|exists:user_db.countries,id',
+            // 'work_experience.*.job_type' => 'required|in:fullTime,partTime,freelance',
+            // 'work_experience.*.work_place' => 'required|in:office,house,flexible',
+            // 'work_experience.*.responsibilities' => 'required|string',
+            // 'work_experience.*.career_level' => 'required|in:boss,expert,mid_level,junior,student',
+            // 'work_experience.*.start_date' => 'required|date',
+            // 'work_experience.*.end_date' => 'required|date|after:work_experience.*.start_date',
+            // 'work_experience.*.certificate' => $certificateRules,
         ];
     }
 
@@ -174,55 +157,59 @@ class Profiles extends FormRequest
             'specialization.in' => 'The selected specialization is invalid.',
             'level.required' => 'The level is required.',
             'level.in' => 'The selected level is invalid.',
+            'level.in' => 'The selected status must be in Under Review, Approved, Rejected.',
 
             // socials
-            'socials.required' => 'The socials field is required.',
-            'socials.array' => 'The socials must be an array.',
-            'socials.instagram.required' => 'The Instagram URL is required.',
-            'socials.instagram.url' => 'The Instagram URL must be a valid URL.',
-            'socials.linkedin.required' => 'The LinkedIn URL is required.',
-            'socials.linkedin.url' => 'The LinkedIn URL must be a valid URL.',
-            'socials.facebook.required' => 'The Facebook URL is required.',
-            'socials.facebook.url' => 'The Facebook URL must be a valid URL.',
+            // 'socials.required' => 'The socials field is required.',
+            // 'socials.array' => 'The socials must be an array.',
+            // 'socials.instagram.required' => 'The Instagram URL is required.',
+            // 'socials.instagram.url' => 'The Instagram URL must be a valid URL.',
+            // 'socials.linkedin.required' => 'The LinkedIn URL is required.',
+            // 'socials.linkedin.url' => 'The LinkedIn URL must be a valid URL.',
+            // 'socials.facebook.required' => 'The Facebook URL is required.',
+            // 'socials.facebook.url' => 'The Facebook URL must be a valid URL.',
 
             // education
-            'education.required' => 'The education field is required.',
-            'education.array' => 'The education must be an array.',
-            'education.*.qualification.required' => 'The qualification field is required for each education entry.',
-            'education.*.university.required' => 'The university field is required for each education entry.',
-            'education.*.specialization.required' => 'The specialization field is required for each education entry.',
-            'education.*.specialization.in' => 'The selected specialization for education is invalid.',
-            'education.*.countries_id.required' => 'The country field is required for each education entry.',
-            'education.*.countries_id.exists' => 'The selected country for education is invalid.',
-            'education.*.certificate.required' => 'The certificate field is required for each education entry.',
-            'education.*.certificate.file' => 'The certificate must be a valid file.',
-            'education.*.certificate.mimes' => 'The certificate must be a file of type: pdf.',
+            // 'education.required' => 'The education field is required.',
+            // 'education.array' => 'The education must be an array.',
+            // 'education.*.major.required' => 'The major field is required for each education entry.',
+            // 'education.*.grade.required' => 'The grade field is required for each education entry.',
+            // 'education.*.degree.required' => 'The degree field is required for each education entry.',
+            // 'education.*.qualification.required' => 'The qualification field is required for each education entry.',
+            // 'education.*.university.required' => 'The university field is required for each education entry.',
+            // 'education.*.country_id.required' => 'The country field is required for each education entry.',
+            // 'education.*.country_id.exists' => 'The selected country for education is invalid.',
+            // 'education.*.certificate.required' => 'The certificate field is required for each education entry.',
+            // 'education.*.certificate.file' => 'The certificate must be a valid file.',
+            // 'education.*.certificate.mimes' => 'The certificate must be a file of type: pdf.',
+            // 'education.*.start_date.required' => 'The from date is required for each work experience entry.',
+            // 'education.*.start_date.date' => 'The from date must be a valid date.',
+            // 'education.*.end_date.required' => 'The to date is required for each work experience entry.',
+            // 'education.*.end_date.date' => 'The to date must be a valid date.',
+            // 'education.*.end_date.after' => 'The to date must be after the from date for each work experience entry.',
 
             // work experience
-            'work_experience.required' => 'The work experience field is required.',
-            'work_experience.array' => 'The work experience must be an array.',
-            'work_experience.*.job_name.required' => 'The job name field is required for each work experience entry.',
-            'work_experience.*.countries_id.required' => 'The country field is required for each work experience entry.',
-            'work_experience.*.countries_id.exists' => 'The selected country for work experience is invalid.',
-            'work_experience.*.section.required' => 'The section field is required for each work experience entry.',
-            'work_experience.*.section.in' => 'The selected section for work experience is invalid.',
-            'work_experience.*.specialization.required' => 'The specialization field is required for each work experience entry.',
-            'work_experience.*.specialization.in' => 'The selected specialization for work experience is invalid.',
-            'work_experience.*.job_type.required' => 'The job type field is required for each work experience entry.',
-            'work_experience.*.job_type.in' => 'The selected job type for work experience is invalid.',
-            'work_experience.*.work_place.required' => 'The work place field is required for each work experience entry.',
-            'work_experience.*.work_place.in' => 'The selected work place for work experience is invalid.',
-            'work_experience.*.responsibilities.required' => 'The responsibilities field is required for each work experience entry.',
-            'work_experience.*.career_level.required' => 'The career level field is required for each work experience entry.',
-            'work_experience.*.career_level.in' => 'The selected career level for work experience is invalid.',
-            'work_experience.*.from.required' => 'The from date is required for each work experience entry.',
-            'work_experience.*.from.date' => 'The from date must be a valid date.',
-            'work_experience.*.to.required' => 'The to date is required for each work experience entry.',
-            'work_experience.*.to.date' => 'The to date must be a valid date.',
-            'work_experience.*.to.after' => 'The to date must be after the from date for each work experience entry.',
-            'work_experience.*.certificate.required' => 'The certificate field is required for each work experience entry.',
-            'work_experience.*.certificate.file' => 'The certificate must be a valid file.',
-            'work_experience.*.certificate.mimes' => 'The certificate must be a file of type: pdf.',
+            // 'work_experience.required' => 'The work experience field is required.',
+            // 'work_experience.array' => 'The work experience must be an array.',
+            // 'work_experience.*.company.required' => 'The company field is required for each work experience entry.',
+            // 'work_experience.*.job_title.required' => 'The job name field is required for each work experience entry.',
+            // 'work_experience.*.country_id.required' => 'The country field is required for each work experience entry.',
+            // 'work_experience.*.country_id.exists' => 'The selected country for work experience is invalid.',
+            // 'work_experience.*.job_type.required' => 'The job type field is required for each work experience entry.',
+            // 'work_experience.*.job_type.in' => 'The selected job type for work experience is invalid.',
+            // 'work_experience.*.work_place.required' => 'The work place field is required for each work experience entry.',
+            // 'work_experience.*.work_place.in' => 'The selected work place for work experience is invalid.',
+            // 'work_experience.*.responsibilities.required' => 'The responsibilities field is required for each work experience entry.',
+            // 'work_experience.*.career_level.required' => 'The career level field is required for each work experience entry.',
+            // 'work_experience.*.career_level.in' => 'The selected career level for work experience is invalid.',
+            // 'work_experience.*.start_date.required' => 'The from date is required for each work experience entry.',
+            // 'work_experience.*.start_date.date' => 'The from date must be a valid date.',
+            // 'work_experience.*.end_date.required' => 'The to date is required for each work experience entry.',
+            // 'work_experience.*.end_date.date' => 'The to date must be a valid date.',
+            // 'work_experience.*.end_date.after' => 'The to date must be after the from date for each work experience entry.',
+            // 'work_experience.*.certificate.required' => 'The certificate field is required for each work experience entry.',
+            // 'work_experience.*.certificate.file' => 'The certificate must be a valid file.',
+            // 'work_experience.*.certificate.mimes' => 'The certificate must be a file of type: pdf.',
         ];
     }
     protected function failedValidation(Validator $validator)
@@ -232,4 +219,13 @@ class Profiles extends FormRequest
             'errors' => $validator->errors(),
         ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
     }
+
+    protected function failValidation(string $message)
+    {
+        throw new HttpResponseException(response()->json([
+            'message' => 'Validation error',
+            'errors' => $message
+        ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY));
+    }
+
 }

@@ -2,79 +2,45 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
-class Verification extends Model implements HasMedia
+
+class Verification extends Model
 {
-    use HasFactory , InteractsWithMedia;
+    use HasFactory ,  LogsActivity, SoftDeletes;
 
     protected $table = 'verifications';
 
-    protected $fillable = ['user_id' , 'national_id' , 'type'];
-
-    protected $appends = ['conversion_urls'];
-
-    protected $hidden = [
-        'media'
-    ];
+    protected $fillable = ['profile_id' , 'verified_at' , 'is_paid' , 'start_date' , 'end_date'];
 
     public $timestamps = true;
 
-    public function user(){
-        return $this->belongsTo(User::class , 'user_id');
+    public function profile(){
+        return $this->belongsTo(Profiles::class , 'profile_id');
     }
 
-
-    public function registerMediaConversions(Media $media = null): void
+    public function getActivitylogOptions(): LogOptions
     {
-            $this
-            ->addMediaConversion('thumb-320')
-                ->width(320)
-                ->height(200);
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->setDescriptionForEvent(fn (string $eventName) => "This VerificationInformation has been {$eventName}")
+            ->useLogName('Verification');
 
-                $this
-                ->addMediaConversion('thumb-100')
-                    ->width(100)
-                    ->height(100);
+        // Chain fluent methods for configuration options
     }
 
-    public function getConversionUrlsAttribute()
+    protected static function boot()
     {
-        $mediaItems = $this->getMedia('verifications');
-        $conversions = [];
+        parent::boot();
 
-        if ($mediaItems->isEmpty()) {
-            return [];
-        }
-
-        foreach ($mediaItems as $mediaItem) {
-            $mimeType = $mediaItem->mime_type;
-            $conversionUrls = [];
-
-            if ($mimeType === 'application/pdf') {
-                $conversions[] = [
-                    'original' => $mediaItem->getUrl(),
-                    'type' => 'pdf',
-                ];
-            } else {
-                $conversionNames = $mediaItem->getMediaConversionNames();
-
-                foreach ($conversionNames as $conversionName) {
-                    $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
-                }
-
-                $conversions[] = [
-                    'original' => $mediaItem->getUrl(),
-                    'type' => 'image',
-                    'conversions' => $conversionUrls,
-                ];
-            }
-        }
-
-        return $conversions;
+        static::updating(function ($verification) {
+            $verification->verified_at = Carbon::now();
+        });
     }
+
 }

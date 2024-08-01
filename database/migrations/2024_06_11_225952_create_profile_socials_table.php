@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('profile_socials', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('profiles_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('profile_id')->constrained('profiles' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
             /** profile social media */
-            $table->string('instagram')->nullable();
-            $table->string('linkedin')->nullable();
-            $table->string('facebook')->nullable();
+            // $table->string('instagram')->nullable();
+            // $table->string('linkedin')->nullable();
+            // $table->string('facebook')->nullable();
+
+            $table->foreignId('social_id')->constrained('social_media' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('link');
             $table->softDeletes();
             $table->timestamps();
         });
