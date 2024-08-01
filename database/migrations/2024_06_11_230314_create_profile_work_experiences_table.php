@@ -13,23 +13,20 @@ return new class extends Migration
     {
         Schema::create('profile_work_experiences', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('profiles_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('profile_id')->constrained('profiles' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('company');
 
-
-            $table->string('job_name');
-            $table->unsignedBigInteger('countries_id');
-            $table->enum('section' , ['personal_status']);
-
-            $table->enum('specialization' , ['civil_law']);
-
+            $table->string('job_title');
+            $table->unsignedBigInteger('country_id');
+     
             $table->enum('job_type' , ['fullTime' , 'partTime' , 'freelance']);
             $table->enum('work_place' , ['office' , 'house' , 'flexible']);
             $table->longText('responsibilities');
 
             $table->enum('career_level' , ['boss'  , 'expert' , 'mid_level' , 'junior' , 'student']);
 
-            $table->date('from');
-            $table->date('to');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->softDeletes();
             $table->timestamps();
         });

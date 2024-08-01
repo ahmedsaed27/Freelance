@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class Translators extends FormRequest
+class UpdateProfileSocialsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,8 @@ class Translators extends FormRequest
     public function rules(): array
     {
         return [
-            'cost' => 'required|numeric',
+            'social_id' => 'required|exists:social_media,id',
+            'link' => 'required|url',
         ];
     }
 

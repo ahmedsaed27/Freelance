@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('verifications', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('user_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->bigInteger('user_id')->index();
-            $table->bigInteger('national_id');
-            $table->tinyInteger('type')->comment('0 => personal , 1 => company');
+            $table->unsignedBigInteger('profile_id');
+            $table->foreign('profile_id')->references('id')->on('profiles')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->timestamp('verified_at')->nullable();
             $table->timestamps();
+            $table->boolean('is_paid')->default(false);
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->softDeletes();
         });
     }
 

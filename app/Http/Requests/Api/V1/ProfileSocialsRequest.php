@@ -2,13 +2,13 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use Illuminate\Foundation\Http\FormRequest;
-
+use App\Rules\SocialKeyExists;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class SavedJobs extends FormRequest
+class ProfileSocialsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,7 +26,11 @@ class SavedJobs extends FormRequest
     public function rules(): array
     {
         return [
-            'jobs_id' => 'required|exists:jobs,id'
+            // socials
+            'socials' => 'required|array',
+            'socials.*' => ['required', 'array', new SocialKeyExists],
+            'socials.*.social_id' => 'required|integer|exists:social_media,id',
+            'socials.*.link' => 'required|url',
         ];
     }
 

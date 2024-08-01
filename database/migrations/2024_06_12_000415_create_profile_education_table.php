@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('profile_education', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('profiles_id')->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-
-            $table->string('qualification');
+            $table->foreignId('profile_id')->constrained('profiles' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('major');
+            $table->string('grade');
+            $table->string('degree');
+            $table->string('qualification')->nullable();
             $table->string('university');
-            $table->enum('specialization' , ['appeal']);
-            $table->unsignedBigInteger('countries_id');
-
+            $table->unsignedBigInteger('country_id');
             $table->longText('additional_information')->nullable();
+            $table->date('start_date');
+            $table->date('end_date');
             $table->softDeletes();
             $table->timestamps();
         });

@@ -22,7 +22,7 @@ return new class extends Migration
 
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-            $table->boolean('is_paid');
+            $table->boolean('is_paid')->default(false); // defualt value
 
             $table->softDeletes();
             $table->timestamps();

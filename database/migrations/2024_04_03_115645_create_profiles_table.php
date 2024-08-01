@@ -24,9 +24,10 @@ return new class extends Migration
             /****************************** New Data ******************************/
             $table->unsignedBigInteger('country_id');
             $table->unsignedBigInteger('city_id');
-            $table->enum('field' , ['appeal'])->default('appeal');
-            $table->enum('specialization' , ['appeal'])->default('appeal');
+            $table->string('field');
+            $table->string('specialization');
             $table->enum('level' , ['boss'  , 'expert' , 'mid_level' , 'junior' , 'student'])->default('mid_level');
+            $table->enum('status' , ['Under Review', 'Approved', 'Rejected'])->default('Under Review');
 
             $table->softDeletes();
             $table->timestamps();

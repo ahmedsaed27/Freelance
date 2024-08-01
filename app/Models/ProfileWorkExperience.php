@@ -5,28 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ProfileWorkExperience extends Model implements HasMedia
 {
-    use HasFactory , InteractsWithMedia , SoftDeletes;
+    use HasFactory , InteractsWithMedia , SoftDeletes , LogsActivity;
 
     protected $table = 'profile_work_experiences';
 
     protected $fillable = [
-      'profiles_id',
-      'job_name',
-      'countries_id',
-      'section',
-      'specialization',
+      'profile_id',
+      'company',
+      'job_title',
+      'country_id',
       'job_type',
       'work_place',
       'responsibilities',
       'career_level',
-      'from',
-      'to',
+      'start_date',
+      'end_date',
     ];
 
     public $timestamps = true;
@@ -38,7 +39,11 @@ class ProfileWorkExperience extends Model implements HasMedia
     ];
 
     public function profile(){
-        return $this->belongsTo(Profiles::class , 'profiles_id');
+        return $this->belongsTo(Profiles::class , 'profile_id');
+    }
+
+    public function country(){
+        return $this->belongsTo(Country::class , 'country_id');
     }
 
     public function registerMediaConversions(Media $media = null): void
@@ -89,4 +94,16 @@ class ProfileWorkExperience extends Model implements HasMedia
 
         return $conversions;
     }
+
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly($this->fillable)
+            ->setDescriptionForEvent(fn (string $eventName) => "This ProfileWorkExperienceInformation has been {$eventName}")
+            ->useLogName('ProfileWorkExperience');
+
+        // Chain fluent methods for configuration options
+    }
+
 }

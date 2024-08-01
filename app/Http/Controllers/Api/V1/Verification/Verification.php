@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Models\Activity;
 
 class Verification extends Controller
 {
@@ -17,11 +18,52 @@ class Verification extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     public function __construct()
+    {
+        $this->middleware('verificationProfile')->only('store');
+    }
+
     public function index()
     {
-        $verification = VerificationModel::with('user')->paginate(10);
+        $verification = VerificationModel::with('profile')->paginate(10);
 
         return $this->successPaginated(status:Response::HTTP_OK , message:'verifications Retrieved Successfully.' , data:$verification);
+    }
+
+    public function getAllDataWithoutPaginate(){
+        $data = VerificationModel::with('profile')->get();
+
+        return $this->success(status: Response::HTTP_OK, message: 'verifications Retrieved Successfully.', data: $data);
+    }
+
+    public function getLogs(string $id){
+        $data = VerificationModel::find($id);
+
+        if(!$data){
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "Sorry, the requested data was not found."
+            );
+        }
+
+        $logs = Activity::where('subject_id', $data->id)
+                        ->where('subject_type', VerificationModel::class)
+                        ->get();
+
+        if ($logs->isEmpty()) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: "No logs found for the specified Verification."
+            );
+        }
+
+
+        return $this->success(
+            status:Response::HTTP_OK
+            , message:'Logs Retrived Succesfuly'
+            , data:  $logs
+        );
     }
 
     /**
@@ -29,35 +71,39 @@ class Verification extends Controller
      */
     public function store(VerificatioRequest $request)
     {
-        try{
+        try {
+            $user = auth()->guard('api')->user();
+            $profile = $user->profile;
+
+            if (!$profile) {
+                return $this->error(status: 500, message: 'User doesn\'t have a profile.');
+            }
+
+            $request->merge(['profile_id' => $profile->id]);
+
             DB::beginTransaction();
 
-            $request->merge([
-                'user_id' => auth()->guard('api')->id()
-            ]);
-
-            $verification = VerificationModel::create($request->except('attachments'));
+            $verification = VerificationModel::create($request->all());
 
             DB::commit();
 
-            $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
+            return $this->success(status: Response::HTTP_OK, message: 'Verification created successfully.', data: $verification);
 
-            return $this->success(status:Response::HTTP_OK , message:'verifications Created Successfully.' , data:$verification);
-
-        }catch(Exception $e){
+        } catch (Exception $e) {
             DB::rollBack();
 
-            $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:$e->getMessage());
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
         }
-
     }
+
+
 
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
-        $verifications = VerificationModel::with('user')->find($id);
+        $verifications = VerificationModel::with('profile')->find($id);
 
         if (!$verifications) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
@@ -73,29 +119,32 @@ class Verification extends Controller
      */
     public function update(VerificatioRequest $request, string $id)
     {
-        $verification = VerificationModel::find($id);
+        try {
+            $verification = VerificationModel::find($id);
 
-        if (!$verification) {
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
+            if (!$verification) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Verification not found.');
+            }
+
+            $user = auth()->guard('api')->user();
+            $profile = $user->profile;
+
+            if (!$profile) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'User doesn\'t have a profile.');
+            }
+
+            if ($verification->profile_id != $profile->id) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only the profile owner can update the profile.');
+            }
+
+            $request->merge(['profile_id' => $profile->id]);
+
+            $verification->update($request->all());
+
+            return $this->success(status: Response::HTTP_OK, message: 'Verification updated successfully.', data: ['profile' => $verification]);
+        } catch (Exception $e) {
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
         }
-
-        if($verification->user_id != auth()->guard('api')->id()){
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Create The verification Can Update.',);
-        }
-
-        $verification->update($request->except('attachments'));
-
-
-        if($request->hasFile('attachments')){
-            $verification->clearMediaCollection('verifications');
-            $verification->addMediaFromRequest('attachments')->toMediaCollection('verifications', 'verifications');
-        }
-
-
-
-        return $this->success(status: Response::HTTP_OK, message: 'verification Updated Successfully.', data: [
-            'profile' => $verification,
-        ]);
     }
 
     /**
@@ -110,14 +159,59 @@ class Verification extends Controller
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'verifications not found.',);
         }
 
-        if($verification->user_id != auth()->guard('api')->id()){
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Create The verification Can Update.',);
+        $user = auth()->guard('api');
+        $profile = $user->user()?->profile;
+
+        if(!$profile){
+           $this->error(status:500 , message:'User Dosnt Have Profile.');
         }
 
-        $verification->clearMediaCollection('verifications');
+
+        if($verification->profile_id != $profile->id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Profile Owner Can Delete The Profile.',);
+        }
 
         $verification->delete();
 
         return $this->success(status: Response::HTTP_OK, message: 'verification Deleted Successfully.',data:$verification);
+    }
+
+
+    public function restore(string $id)
+    {
+        $data = VerificationModel::withTrashed()->find($id);
+
+        if (!$data) {
+            return $this->error(
+                status: Response::HTTP_NOT_FOUND,
+                message: 'Verification not found.'
+            );
+        }
+
+        if (!$data->trashed()) {
+
+            return $this->error(
+                status: Response::HTTP_BAD_REQUEST,
+                message: 'Verification not found.'
+            );
+        }
+
+        $data->restore();
+
+        return $this->success(
+            status:Response::HTTP_OK
+            ,message: 'Type restored successfully.'
+            , data: $data
+        );
+    }
+
+    public function getAllTrashedData(){
+        $data = VerificationModel::onlyTrashed()->paginate(10);
+
+        return $this->successPaginated(
+            status:Response::HTTP_OK
+            , message:'Verification Retrived Succesfuly'
+            , data: $data
+        );
     }
 }
