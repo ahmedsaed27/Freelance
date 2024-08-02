@@ -11,19 +11,13 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class SocialMedia extends Model implements HasMedia
+class SocialMedia extends Model
 {
-    use HasFactory , SoftDeletes , LogsActivity , InteractsWithMedia;
+    use HasFactory , SoftDeletes , LogsActivity ;
 
     protected $table = 'social_media';
 
-    protected $fillable = ['name'];
-
-    protected $appends = ['conversion_urls'];
-
-    protected $hidden = [
-        'media'
-    ];
+    protected $fillable = ['name' , 'icon'];
 
     public $timestamps = true;
 
@@ -37,46 +31,5 @@ class SocialMedia extends Model implements HasMedia
         // Chain fluent methods for configuration options
     }
 
-
-    public function registerMediaConversions(Media $media = null): void
-    {
-            $this
-            ->addMediaConversion('thumb-320')
-                ->width(320)
-                ->height(200);
-
-                $this
-                ->addMediaConversion('thumb-100')
-                    ->width(100)
-                    ->height(100);
-    }
-
-    public function getConversionUrlsAttribute()
-    {
-        $mediaItems = $this->getMedia('profiles');
-        $conversions = [];
-
-        if ($mediaItems->isEmpty()) {
-            return [];
-        }
-
-        foreach ($mediaItems as $mediaItem) {
-            $conversionUrls = [];
-
-            $conversionNames = $mediaItem->getMediaConversionNames();
-
-            foreach ($conversionNames as $conversionName) {
-                $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
-            }
-
-            $conversions[] = [
-                'original' => $mediaItem->getUrl(),
-                'type' => 'image',
-                'conversions' => $conversionUrls,
-            ];
-        }
-
-        return $conversions;
-    }
 
 }
