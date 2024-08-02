@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\WorkedCaseNotes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\WorkedCaseNotesRequest;
 use App\Models\WorkedCaseNotes;
+use App\Models\WorkedCases;
 use App\Traits\Api\V1\Responses;
 use Exception;
 use Illuminate\Http\Request;
@@ -68,8 +69,15 @@ class WorkedCaseNotesController extends Controller
     public function store(WorkedCaseNotesRequest $request)
     {
         try{
+            $user_id = auth()->guard('api')->id();
+
             DB::beginTransaction();
-            $data = WorkedCaseNotes::create($request->validated());
+
+            $request->merge([
+                'created_by_user_id' => $user_id,
+            ]);
+
+            $data = WorkedCaseNotes::create($request->all());
 
             if($request->hasFile('files')){
                 foreach ($request->file('files') as $file) {
@@ -80,7 +88,7 @@ class WorkedCaseNotesController extends Controller
 
             DB::commit();
 
-            return $this->success(status: Response::HTTP_OK, message: 'WorkedCaseNotes Retrieved Successfully.', data: $data);
+            return $this->success(status: Response::HTTP_OK, message: 'WorkedCaseNotes Created Successfully.', data: $data);
         }catch(Exception $e){
             return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:$e->getMessage());
         }
@@ -106,13 +114,23 @@ class WorkedCaseNotesController extends Controller
     public function update(WorkedCaseNotesRequest $request, string $id)
     {
         $data = WorkedCaseNotes::find($id);
+        $user_id = auth()->guard('api')->id();
 
         if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'WorkedCaseNotes not found.',);
         }
+
+        if($data->created_by_user_id != $user_id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Original User Can Update The Note.');
+        }
+
         DB::beginTransaction();
 
-        $data->update($request->validated());
+        $request->merge([
+            'created_by_user_id' => auth()->guard('api')->id(),
+        ]);
+
+        $data->update($request->all());
 
         if($request->hasFile('files')){
             $data->clearMediaCollection('worked_case_notes');

@@ -32,17 +32,17 @@ class ProfileEducationRequest extends FormRequest
 
         return [
             // education
-            'education' => 'required|array',
-            'education.*.major' => 'required|string',
-            'education.*.grade' => 'required|string',
-            'education.*.degree' => 'required|string',
-            'education.*.qualification' => 'sometimes|string',
-            'education.*.university' => 'required|string',
-            'education.*.country_id' => 'required|exists:user_db.countries,id',
-            'education.*.additional_information' => 'nullable',
-            'education.*.start_date' => 'required|date',
-            'education.*.end_date' => 'required|date|after:education.*.start_date',
-            'education.*.certificate' => $certificateRules,
+            // 'education' => 'required|array',
+            'major' => 'required|string',
+            'grade' => 'required|string',
+            'degree' => 'required|string',
+            'qualification' => 'sometimes|string',
+            'university' => 'required|string',
+            'country_id' => 'required|exists:user_db.countries,id',
+            'additional_information' => 'nullable',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:education.*.start_date',
+            'certificate' => $certificateRules,
         ];
     }
 

@@ -27,12 +27,16 @@ class WorkedCaseNotesRequest extends FormRequest
     public function rules()
     {
         return [
-            'worked_case_id' => 'required|exists:worked_cases,id',
-            'created_by_user_id' =>[
+            'worked_case_id' => [
                 'required',
-                'exists:user_db.users,id',
-                new UserBelongToCase($this->worked_case_id , $this->created_by_user_id),
+                'exists:worked_cases,id',
+                new UserBelongToCase($this->worked_case_id , auth()->guard('api')->id()),
             ],
+            // 'created_by_user_id' =>[
+            //     'required',
+            //     'exists:user_db.users,id',
+            //     new UserBelongToCase($this->worked_case_id , auth()->guard('api')->id()),
+            // ],
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:worked_case_notes,id',
             'files' => 'nullable|array',

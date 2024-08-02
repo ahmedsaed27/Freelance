@@ -191,6 +191,16 @@ class Cases extends Controller
     }
 
 
+    public function getAllUserCasesWithApplyers()
+    {
+        $case = ModelsCases::with('user' , 'receive' , 'countrie' , 'city')->where('user_id' , auth()->guard('api')->id())->first();
+
+        if (!$case) {
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+        }
+
+        return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $case);
+    }
     public function restore(string $id)
     {
         $data = ModelsCases::withTrashed()->find($id);

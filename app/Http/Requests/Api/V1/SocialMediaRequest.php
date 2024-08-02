@@ -26,7 +26,7 @@ class SocialMediaRequest extends FormRequest
     {
         return [
             'name' => 'required|unique:social_media,name,'.$this->social,
-            'icon' => 'required|image'
+            'icon' => 'required|string'
         ];
     }
 

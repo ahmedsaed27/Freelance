@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\CaseProfileNotes;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\CaseProfileNotesRequest;
 use App\Models\CaseProfileNotes;
+use App\Models\CasesProfile;
 use App\Traits\Api\V1\Responses;
 use Exception;
 use Illuminate\Http\Request;
@@ -67,7 +68,14 @@ class CaseProfileNotesController extends Controller
     public function store(CaseProfileNotesRequest $request)
     {
         try{
+            $user_id = auth()->guard('api')->id();
+
             DB::beginTransaction();
+
+            $request->merge([
+                'created_by_user_id' => $user_id,
+            ]);
+
             $data = CaseProfileNotes::create($request->except('files'));
 
             if($request->hasFile('files')){
@@ -103,11 +111,21 @@ class CaseProfileNotesController extends Controller
     public function update(CaseProfileNotesRequest $request, string $id)
     {
         $data = CaseProfileNotes::find($id);
+        $user_id = auth()->guard('api')->id();
 
         if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'CaseProfileNotes not found.',);
         }
+
+        if($data->created_by_user_id != $user_id){
+            return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR ,message:'Only Profile Owner Can Update The Note.');
+        }
+
         DB::beginTransaction();
+
+        $request->merge([
+            'created_by_user_id' => $user_id,
+        ]);
 
         $data->update($request->except('files'));
 
@@ -117,6 +135,7 @@ class CaseProfileNotesController extends Controller
                 $data->addMedia($file)->toMediaCollection('profile_case_note', 'profile_case_note');
             }
         }
+
         DB::commit();
 
 

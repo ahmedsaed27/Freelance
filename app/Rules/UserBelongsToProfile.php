@@ -27,7 +27,7 @@ class UserBelongsToProfile implements ValidationRule
         $caseProfile = CasesProfile::find($this->caseProfileID);
 
         if (!$caseProfile || $caseProfile->profile->user_id != $this->user) {
-            $fail('The user does not belong to the profile.');
+            $fail('The case does not belong to the profile.');
         }
     }
 }

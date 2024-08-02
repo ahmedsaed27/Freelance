@@ -66,6 +66,7 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::get('case/trashed/all', [Cases::class, 'getAllTrashedData']);
     Route::post('case/logs/{id}' , [Cases::class , 'getLogs']);
     Route::post('case/restore/{id}' , [Cases::class , 'restore']);
+    Route::get('cases/details' , [Cases::class , 'getAllUserCasesWithApplyers']);
 
     Route::apiResource('receive' , Receive::class);
     Route::get('receive/get/all' , [Receive::class , 'getAllDataWithoutPaginate']);
@@ -111,11 +112,11 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     Route::post('case/profile/note/logs/{id}' , [CaseProfileNotesController::class , 'getLogs']);
     Route::post('case/profile/note/restore/{id}' , [CaseProfileNotesController::class , 'restore']);
 
-    Route::apiResource('worked/case' , WorkedCasesController::class);
-    Route::get('worked/case/get/all' , [WorkedCasesController::class , 'getAllDataWithoutPaginate']);
-    Route::get('worked/case/trashed/all', [WorkedCasesController::class, 'getAllTrashedData']);
-    Route::post('worked/case/logs/{id}' , [WorkedCasesController::class , 'getLogs']);
-    Route::post('worked/case/restore/{id}' , [WorkedCasesController::class , 'restore']);
+    Route::apiResource('worked/cases' , WorkedCasesController::class);
+    Route::get('worked/cases/get/all' , [WorkedCasesController::class , 'getAllDataWithoutPaginate']);
+    Route::get('worked/cases/trashed/all', [WorkedCasesController::class, 'getAllTrashedData']);
+    Route::post('worked/cases/logs/{id}' , [WorkedCasesController::class , 'getLogs']);
+    Route::post('worked/cases/restore/{id}' , [WorkedCasesController::class , 'restore']);
 
     Route::apiResource('worked/case-notes' , WorkedCaseNotesController::class);
     Route::get('worked/case-notes/get/all' , [WorkedCaseNotesController::class , 'getAllDataWithoutPaginate']);
