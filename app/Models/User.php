@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 
-class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
+class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -50,16 +50,24 @@ class User extends Authenticatable implements MustVerifyEmail  , JWTSubject
         return $this->getKey();
     }
 
-    public function profile(){
-        return $this->hasOne(Profiles::class , 'user_id');
+    public function profile()
+    {
+        return $this->hasOne(Profiles::class, 'user_id');
     }
 
-    public function cases(){
-        return $this->hasMany(Cases::class , 'user_id');
+    public function cases()
+    {
+        return $this->hasMany(Cases::class, 'user_id');
     }
 
-    public function verification(){
-        return $this->hasOne(Verification::class , 'user_id');
+    public function verification()
+    {
+        return $this->hasOne(Verification::class, 'user_id');
+    }
+
+    public function requestedBookings()
+    {
+        return $this->hasMany(Booking::class, 'user_id');
     }
 
     /**

@@ -2,19 +2,24 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Models\Booking;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 
-class Booking extends FormRequest
+class ChangeBookingStatusRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        $user = auth()->guard('api')->user();
+        $profile_id = $user->profile->id;
+        $booking = Booking::where('id', $this->booking_id)->first();
+
+        return $booking && $booking->profile_id === $profile_id;
     }
 
     /**
@@ -25,10 +30,15 @@ class Booking extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => 'required|date:Y-m-d',
-            'time' => 'required|date_format:H:i:s',
-            'description' => 'required',
-            'status' => 'required',
+            'booking_id' => 'required|exists:bookings,id',
+            'status'     => 'required|in:Accepted,Rejected',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'status.in' => 'the status values must be [Accepted] Or [Rejected]',
         ];
     }
 
