@@ -13,18 +13,18 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Profiles extends Model implements HasMedia
 {
-    use HasFactory , InteractsWithMedia , SoftDeletes;
+    use HasFactory, InteractsWithMedia, SoftDeletes;
 
     protected $connection = 'mysql';
     protected $table = 'profiles';
 
     protected $fillable = [
-        'user_id' ,
-        'type_id' ,
-        'address' ,
-        'areas_of_expertise' ,
-        'hourly_rate' ,
-        'years_of_experience' ,
+        'user_id',
+        'type_id',
+        'address',
+        'areas_of_expertise',
+        'hourly_rate',
+        'years_of_experience',
         'career',
         'country_id',
         'city_id',
@@ -47,13 +47,15 @@ class Profiles extends Model implements HasMedia
         'media'
     ];
 
-    public function getTypeAttribute($value){
+    public function getTypeAttribute($value)
+    {
         return Types::from($value)->name;
     }
 
 
-    public function user(){
-        return $this->belongsTo(User::class , 'user_id');
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function socials(){
@@ -68,52 +70,63 @@ class Profiles extends Model implements HasMedia
     }
 
 
-    public function workExperiences(){
-        return $this->hasMany(ProfileWorkExperience::class , 'profile_id');
+    public function workExperiences()
+    {
+        return $this->hasMany(ProfileWorkExperience::class, 'profile_id');
     }
 
 
-    public function education(){
-        return $this->hasMany(ProfileEducation::class , 'profile_id');
+    public function education()
+    {
+        return $this->hasMany(ProfileEducation::class, 'profile_id');
     }
 
-    public function city(){
-        return $this->belongsTo(Cities::class , 'city_id');
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'profile_id');
     }
 
-    public function country(){
-        return $this->belongsTo(Country::class , 'country_id');
+    public function city()
+    {
+        return $this->belongsTo(Cities::class, 'city_id');
     }
 
-    public function currency(){
-        return $this->belongsTo(Currency::class , 'currency_id');
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
+    }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
     }
 
     public function profileType()
     {
         return $this->belongsToMany(Type::class, 'profile_type', 'profile_id', 'type_id')
-                    ->withTimestamps()
-                    ->withTrashed()
-                    ->wherePivotNull('deleted_at');
+            ->withTimestamps()
+            ->withTrashed()
+            ->wherePivotNull('deleted_at');
     }
 
-    public function receive(){
-        return $this->belongsToMany(Cases::class , 'case_profile' , 'profile_id' , 'case_id')
-        ->withPivot('suggested_rate', 'description', 'estimation_time' , 'currency_id')
-        ->withTimestamps();
+    public function receive()
+    {
+        return $this->belongsToMany(Cases::class, 'case_profile', 'profile_id', 'case_id')
+            ->withPivot('suggested_rate', 'description', 'estimation_time', 'currency_id')
+            ->withTimestamps();
     }
 
     public function registerMediaConversions(Media $media = null): void
     {
-            $this
+        $this
             ->addMediaConversion('thumb-320')
-                ->width(320)
-                ->height(200);
+            ->width(320)
+            ->height(200);
 
-                $this
-                ->addMediaConversion('thumb-100')
-                    ->width(100)
-                    ->height(100);
+        $this
+            ->addMediaConversion('thumb-100')
+            ->width(100)
+            ->height(100);
     }
 
     public function getConversionUrlsAttribute()
@@ -154,5 +167,4 @@ class Profiles extends Model implements HasMedia
 
         return $conversions;
     }
-
 }
