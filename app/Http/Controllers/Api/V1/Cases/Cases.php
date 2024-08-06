@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Cases;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Cases as RequestsCases;
+use App\Http\Resources\CaseResource;
 use App\Models\Cases as ModelsCases;
 use App\Traits\Api\V1\Responses;
 use Exception;
@@ -20,9 +21,13 @@ class Cases extends Controller
      */
     public function index()
     {
-        $cases = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill')->paginate(10);
+        $cases = ModelsCases::with('user' , 'city', 'caseKeyword' , 'caseSkill' , 'receive')->paginate(10);
 
-        return $this->successPaginated(status:Response::HTTP_OK , message:'Cases Retrieved Successfully' , data:$cases);
+        return $this->successPaginated(
+            status:Response::HTTP_OK,
+            message:'Cases Retrieved Successfully',
+            data: CaseResource::collection($cases)
+        );
     }
 
     public function getAllDataWithoutPaginate(){
@@ -77,8 +82,14 @@ class Cases extends Controller
             $case->caseSkill()->sync($request->input('skills'));
 
             if($request->hasFile('id') && $request->hasFile('certificate')){
-                $case->addMediaFromRequest('id')->toMediaCollection('case', 'cases');
-                $case->addMediaFromRequest('certificate')->toMediaCollection('case', 'cases');
+                $case->addMediaFromRequest('id')
+                ->withCustomProperties(['column' => 'id'])
+                ->toMediaCollection('case', 'cases');
+
+
+                $case->addMediaFromRequest('certificate')
+                ->withCustomProperties(['column' => 'certificate'])
+                ->toMediaCollection('case', 'cases');
             }
 
             DB::commit();
@@ -98,10 +109,14 @@ class Cases extends Controller
      */
     public function show(string $id)
     {
-        $case = ModelsCases::with('user' ,'city' ,'caseKeyword' , 'caseSkill')->find($id);
+        $case = ModelsCases::with('city' ,'caseKeyword' , 'caseSkill' , 'receive')->find($id);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
+        }
+
+        if(!$case->is_anonymous){
+            $case->load('user');
         }
 
         return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $case);
@@ -128,11 +143,10 @@ class Cases extends Controller
             $case->caseKeyword()->sync($request->input('keywords'));
             $case->caseSkill()->sync($request->input('skills'));
 
-            if($request->hasFile('id') && $request->hasFile('certificate')){
-                $case->clearMediaCollection('case');
-                $case->addMediaFromRequest('id')->toMediaCollection('case', 'cases');
-                $case->addMediaFromRequest('certificate')->toMediaCollection('case', 'cases');
-            }
+
+            $this->updateMedia($case , $request);
+
+            $case->load('media');
 
             DB::commit();
 
@@ -142,6 +156,41 @@ class Cases extends Controller
             DB::rollBack();
 
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
+        }
+
+    }
+
+
+    private function updateMedia($case, $request)
+    {
+        $existingMedia = $case->getMedia('case');
+
+        if ($request->hasFile('id')) {
+            $existingImageMedia = $existingMedia->filter(function ($media) {
+                return $media->getCustomProperty('column') === 'id';
+            });
+
+            if ($existingImageMedia->isNotEmpty()) {
+                $existingImageMedia->each->delete();
+            }
+
+            $case->addMediaFromRequest('id')
+            ->withCustomProperties(['column' => 'id'])
+            ->toMediaCollection('case', 'cases');
+        }
+
+        if ($request->hasFile('certificate')) {
+            $existingImageMedia = $existingMedia->filter(function ($media) {
+                return $media->getCustomProperty('column') === 'certificate';
+            });
+
+            if ($existingImageMedia->isNotEmpty()) {
+                $existingImageMedia->each->delete();
+            }
+
+            $case->addMediaFromRequest('certificate')
+            ->withCustomProperties(['column' => 'certificate'])
+            ->toMediaCollection('case', 'cases');
         }
 
     }

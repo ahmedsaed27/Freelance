@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1\WorkedCases;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\UpdateWorkedCaseRequest;
 use App\Http\Requests\Api\V1\WorkedCaseRequest;
+use App\Models\Cases;
 use App\Models\WorkedCases;
 use App\Traits\Api\V1\Responses;
 use Exception;
@@ -68,8 +70,24 @@ class WorkedCasesController extends Controller
     public function store(WorkedCaseRequest $request)
     {
         try{
+            $case = Cases::find($request->case_id);
+
+            if(!$case){
+                return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:'Case not found.');
+            }
+
+            $caseResivePivot =  $case->receive()->wherePivot('profile_id' , $request->profile_id)->first()->pivot;
+
+            $ArrOfData = [
+                'profile_id' => $request->profile_id,
+                'case_id' => $case->id,
+                'rate' => $caseResivePivot->suggested_rate,
+                'currency_id' => $caseResivePivot->currency_id,
+                'status' => 'Pending',
+            ];
+
             DB::beginTransaction();
-            $data = WorkedCases::create($request->validated());
+            $data = WorkedCases::create($ArrOfData);
             DB::commit();
 
             return $this->success(status: Response::HTTP_OK, message: 'WorkedCases Retrieved Successfully.', data: $data);
@@ -95,16 +113,24 @@ class WorkedCasesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(WorkedCaseRequest $request, string $id)
+    public function update(UpdateWorkedCaseRequest $request, string $id)
     {
         $data = WorkedCases::find($id);
 
         if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'WorkedCases not found.',);
         }
+
+        if($data->profile_id != auth()->guard('api')->id()){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
+        }
+
         DB::beginTransaction();
 
-        $data->update($request->validated());
+        $data->update([
+            'status' => $request->status,
+            'start_date' => now()
+        ]);
 
         DB::commit();
 

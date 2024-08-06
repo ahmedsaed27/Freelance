@@ -79,25 +79,22 @@ class WorkedCaseNotes extends Model implements HasMedia
         foreach ($mediaItems as $mediaItem) {
             $mimeType = $mediaItem->mime_type;
             $conversionUrls = [];
+            $column = $mediaItem->getCustomProperty('column');
 
-            if ($mimeType === 'application/pdf') {
-                $conversions[] = [
-                    'original' => $mediaItem->getUrl(),
-                    'type' => 'pdf',
-                ];
-            } else {
+            if(in_array($mimeType , ['image/jpg' ,'image/jpeg' ,'image/png'])){
                 $conversionNames = $mediaItem->getMediaConversionNames();
 
                 foreach ($conversionNames as $conversionName) {
                     $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
                 }
-
-                $conversions[] = [
-                    'original' => $mediaItem->getUrl(),
-                    'type' => 'image',
-                    'conversions' => $conversionUrls,
-                ];
             }
+
+
+            $conversions[$column][] = [
+                'original' => $mediaItem->getUrl(),
+                'type' => $mimeType,
+                'conversions' => $conversionUrls ?? null,
+            ];
         }
 
         return $conversions;

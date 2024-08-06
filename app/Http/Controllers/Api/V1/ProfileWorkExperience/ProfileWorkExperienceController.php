@@ -84,7 +84,9 @@ class ProfileWorkExperienceController extends Controller
             $profileWorkExperience = ProfileWorkExperience::create($request->except('certificate'));
 
             if ($request->hasFile('certificate')) {
-                $profileWorkExperience->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
+                $profileWorkExperience->addMediaFromRequest('certificate')
+                ->withCustomProperties(['column' => 'certificate'])
+                ->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();
@@ -145,7 +147,10 @@ class ProfileWorkExperienceController extends Controller
 
             if ($request->hasFile('certificate')) {
                 $data->clearMediaCollection('certificates');
-                $data->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
+
+                $data->addMediaFromRequest('certificate')
+                ->withCustomProperties(['column' => 'certificate'])
+                ->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();

@@ -30,7 +30,8 @@ class Cases extends Model implements HasMedia
         'min_amount',
         'max_amount',
         'type_id',
-        'status'
+        'status',
+        'number_of_days'
     ];
 
     protected $appends = ['conversion_urls'];
@@ -52,7 +53,10 @@ class Cases extends Model implements HasMedia
 
     public function receive(){
         return $this->belongsToMany(Profiles::class , 'case_profile' , 'case_id' , 'profile_id')
-        ->withTimestamps();
+        ->withTimestamps()
+        ->withPivot(['suggested_rate' , 'description' , 'status' , 'estimation_time' , 'currency_id']);
+
+        // return $this->hasMany(CasesProfile::class , 'case_id');
     }
 
 
@@ -96,6 +100,7 @@ class Cases extends Model implements HasMedia
         $mediaItems = $this->getMedia('case');
         $conversions = [];
 
+
         if ($mediaItems->isEmpty()) {
             return [];
         }
@@ -103,9 +108,11 @@ class Cases extends Model implements HasMedia
         foreach ($mediaItems as $mediaItem) {
             $mimeType = $mediaItem->mime_type;
             $conversionUrls = [];
+            $column = $mediaItem->getCustomProperty('column');
+
 
             if ($mimeType === 'application/pdf') {
-                $conversions[] = [
+                $conversions[$column] = [
                     'original' => $mediaItem->getUrl(),
                     'type' => 'pdf',
                 ];
@@ -116,7 +123,7 @@ class Cases extends Model implements HasMedia
                     $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
                 }
 
-                $conversions[] = [
+                $conversions[$column] = [
                     'original' => $mediaItem->getUrl(),
                     'type' => 'image',
                     'conversions' => $conversionUrls,

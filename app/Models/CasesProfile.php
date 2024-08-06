@@ -15,7 +15,7 @@ class CasesProfile extends Pivot
 
     protected $connection = 'mysql';
 
-    protected $fillable = ['profile_id' , 'case_id' , 'suggested_rate' , 'description' , 'status' , 'estimation_time' , 'currency_id'];
+    protected $fillable = ['profile_id' , 'case_id' , 'suggested_rate' , 'status' , 'estimation_time' , 'currency_id'];
 
     public $timestamps = true;
 

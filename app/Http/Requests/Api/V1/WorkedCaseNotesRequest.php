@@ -40,7 +40,7 @@ class WorkedCaseNotesRequest extends FormRequest
             'content' => 'required|string',
             'parent_id' => 'nullable|exists:worked_case_notes,id',
             'files' => 'nullable|array',
-            'files.*' => 'file|mimes:png,jpg,pdf,xlsb,xltx'
+            'files.*' => 'file|mimes:png,jpg,jpeg,pdf,xlsb,xltx'
         ];
     }
 

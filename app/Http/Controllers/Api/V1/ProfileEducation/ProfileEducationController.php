@@ -85,7 +85,9 @@ class ProfileEducationController extends Controller
             $profileEducations = ProfileEducation::create($request->except('certificate'));
 
             if ($request->hasFile('certificate')) {
-                $profileEducations->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
+                $profileEducations->addMediaFromRequest('certificate')
+                ->withCustomProperties(['column' => 'certificate'])
+                ->toMediaCollection('certificates', 'certificates');
             }
 
 
@@ -143,7 +145,10 @@ class ProfileEducationController extends Controller
 
             if ($request->hasFile('certificate')) {
                 $data->clearMediaCollection('certificates');
-                $data->addMediaFromRequest('certificate')->toMediaCollection('certificates', 'certificates');
+                
+                $data->addMediaFromRequest('certificate')
+                ->withCustomProperties(['column' => 'certificate'])
+                ->toMediaCollection('certificates', 'certificates');
             }
 
             DB::commit();

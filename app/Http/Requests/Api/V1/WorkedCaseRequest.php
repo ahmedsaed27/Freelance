@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Rules\OwnerTheCase;
+use App\Rules\UniqueProfileCase;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -27,17 +28,17 @@ class WorkedCaseRequest extends FormRequest
     {
         return [
             'profile_id' => 'required|exists:profiles,id',
-            // 'case_id' => 'required|exists:cases,id',
             'case_id' => [
                 'required',
                 'exists:cases,id',
                 new OwnerTheCase($this->case_id),
+                new UniqueProfileCase($this->profile_id, $this->case_id),
             ],
-            'rate' => 'required|numeric',
-            'currency_id' => 'required|exists:currencies,id',
-            'status' => 'required|string|in:Pending,In Progress,Completed',
-            'start_time' => 'required|date',
-            'end_time' => 'nullable|date|after_or_equal:start_time',
+            // 'rate' => 'required|numeric',
+            // 'currency_id' => 'required|exists:currencies,id',
+            // 'status' => 'required|string|in:Pending,In Progress,Completed',
+            // 'start_time' => 'required|date',
+            // 'end_time' => 'nullable|date|after_or_equal:start_time',
             'is_paid' => 'required|boolean',
         ];
     }

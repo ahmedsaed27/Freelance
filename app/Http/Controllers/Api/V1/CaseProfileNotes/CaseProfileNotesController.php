@@ -80,7 +80,9 @@ class CaseProfileNotesController extends Controller
 
             if($request->hasFile('files')){
                 foreach ($request->file('files') as $file) {
-                    $data->addMedia($file)->toMediaCollection('profile_case_note', 'profile_case_note');
+                    $data->addMedia($file)
+                    ->withCustomProperties(['column' => 'files'])
+                    ->toMediaCollection('profile_case_note', 'profile_case_note');
                 }
             }
 
@@ -132,7 +134,9 @@ class CaseProfileNotesController extends Controller
         if($request->hasFile('files')){
             $data->clearMediaCollection('profile_case_note');
             foreach ($request->file('files') as $file) {
-                $data->addMedia($file)->toMediaCollection('profile_case_note', 'profile_case_note');
+                $data->addMedia($file)
+                ->withCustomProperties(['column' => 'files'])
+                ->toMediaCollection('profile_case_note', 'profile_case_note');
             }
         }
 

@@ -81,7 +81,9 @@ class WorkedCaseNotesController extends Controller
 
             if($request->hasFile('files')){
                 foreach ($request->file('files') as $file) {
-                    $data->addMedia($file)->toMediaCollection('worked_case_notes', 'worked_case_notes');
+                    $data->addMedia($file)
+                    ->withCustomProperties(['column' => 'files'])
+                    ->toMediaCollection('worked_case_notes', 'worked_case_notes');
                 }
             }
 
@@ -135,7 +137,9 @@ class WorkedCaseNotesController extends Controller
         if($request->hasFile('files')){
             $data->clearMediaCollection('worked_case_notes');
             foreach ($request->file('files') as $file) {
-                $data->addMedia($file)->toMediaCollection('worked_case_notes', 'worked_case_notes');
+                $data->addMedia($file)
+                ->withCustomProperties(['column' => 'files'])
+                ->toMediaCollection('worked_case_notes', 'worked_case_notes');
             }
         }
 

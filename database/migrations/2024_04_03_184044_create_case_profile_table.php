@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->float('suggested_rate');
 
-            $table->longText('description');
+            $table->longText('description')->nullable();
 
             $table->enum('status' , ['Pending' , 'Accepted' , 'Rejected'])->default('Pending');
 

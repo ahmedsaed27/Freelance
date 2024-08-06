@@ -31,6 +31,19 @@ class Profiles extends Controller
         return $this->success(status: Response::HTTP_OK, message: 'Profiles Retrieved Successfully.', data: $profile);
     }
 
+
+    public function getProfileFromToken(){
+        $profile = ProfilesModel::with('user' , 'profileType' , 'currency' , 'country' , 'city' , 'socials', 'workExperiences', 'education')
+        ->where('user_id' , auth()->guard('api')->id())
+        ->first();
+
+        if(!$profile){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message:'User Dosnt Have Profile');
+        }
+
+        return $this->success(status: Response::HTTP_OK, message: 'Profile Retrieved Successfully.', data: $profile);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -59,8 +72,13 @@ class Profiles extends Controller
 
             $profile->profileType()->sync($request->input('types'));
 
-            $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
-            $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
+            $profile->addMediaFromRequest('image')
+            ->withCustomProperties(['column' => 'image'])
+            ->toMediaCollection('profiles', 'profiles');
+
+            $profile->addMediaFromRequest('cv')
+            ->withCustomProperties(['column' => 'cv'])
+            ->toMediaCollection('profiles', 'profiles');
 
             DB::commit();
 
@@ -122,6 +140,43 @@ class Profiles extends Controller
             // Update media
             $this->updateMedia($profile, $request);
 
+            $profile->load('media');
+
+            DB::commit();
+
+            return $this->success(status: Response::HTTP_OK, message: 'Profile Updated Successfully.', data: ['profile' => $profile]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());
+        }
+    }
+
+
+    public function updateProfileFromToken(ProfilesRequest $request){
+        try {
+            DB::beginTransaction();
+            
+            // Fetch the existing profile with related models
+            $profile = ProfilesModel::where('user_id' , auth()->guard('api')->id())->first();
+
+            if (!$profile) {
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.');
+            }
+
+            dd($profile);
+
+            // Update profile attributes
+            $profile->update($request->only([
+                'address', 'areas_of_expertise', 'hourly_rate', 'years_of_experience', 'currency_id',
+                'type', 'career', 'country_id', 'city_id', 'specialization', 'level' , 'status'
+            ]));
+
+            $profile->profileType()->sync($request->input('types'));
+
+            // Update media
+            $this->updateMedia($profile, $request);
+
+            $profile->load('media');
 
             DB::commit();
 
@@ -134,57 +189,37 @@ class Profiles extends Controller
 
     private function updateMedia($profile, $request)
     {
-        // Get existing media
         $existingMedia = $profile->getMedia('profiles');
-        // Handle image update
+
         if ($request->hasFile('image')) {
-            // Find existing image media
-            $existingImageMedia = $existingMedia->where('mime_type' , 'image/png');
+            $existingImageMedia = $existingMedia->filter(function ($media) {
+                return $media->getCustomProperty('column') === 'image';
+            });
 
-            if ($existingImageMedia) {
-                $existingImageMedia->each(function($q) use($profile){
-                    $profile->deleteMedia($q->id);
-                });
+            if ($existingImageMedia->isNotEmpty()) {
+                $existingImageMedia->each->delete();
             }
 
-            // Add new image media
-            $profile->addMediaFromRequest('image')->toMediaCollection('profiles', 'profiles');
+            $profile->addMediaFromRequest('image')
+            ->withCustomProperties(['column' => 'image'])
+            ->toMediaCollection('profiles', 'profiles');
         }
 
-        // Handle CV update
         if ($request->hasFile('cv')) {
-            // Find existing CV media
-            $existingCvMedia = $existingMedia->where('mime_type' , 'application/pdf');
+            $existingImageMedia = $existingMedia->filter(function ($media) {
+                return $media->getCustomProperty('column') === 'cv';
+            });
 
-            if ($existingCvMedia) {
-                $existingCvMedia->each(function($q) use($profile){
-                    $profile->deleteMedia($q->id);
-                });
+            if ($existingImageMedia->isNotEmpty()) {
+                $existingImageMedia->each->delete();
             }
 
-            // Add new CV media
-            $profile->addMediaFromRequest('cv')->toMediaCollection('profiles', 'profiles');
+            $profile->addMediaFromRequest('cv')
+            ->withCustomProperties(['column' => 'cv'])
+            ->toMediaCollection('profiles', 'profiles');
         }
     }
 
-
-    private function updateRelatedRecords($existingRecords, $newRecords, $requestKey, $uniqueKey, $mediaCollection)
-    {
-        $newRecordsCollection = collect($newRecords);
-        foreach ($existingRecords as $existingRecord) {
-            $data = $newRecordsCollection->firstWhere($uniqueKey, $existingRecord->$uniqueKey);
-
-            if ($data) {
-                $existingRecord->update($data);
-
-                $index = $newRecordsCollection->search(fn ($item) => $item[$uniqueKey] === $existingRecord->$uniqueKey);
-                if (request()->hasFile("$requestKey.$index.certificate")) {
-                    $existingRecord->clearMediaCollection($mediaCollection);
-                    $existingRecord->addMediaFromRequest("$requestKey.$index.certificate")->toMediaCollection($mediaCollection, $mediaCollection);
-                }
-            }
-        }
-    }
 
 
 
@@ -210,31 +245,44 @@ class Profiles extends Controller
             $profile->clearMediaCollection('profiles');
 
             // Delete education media and records
-            foreach ($profile->education as $education) {
-                $education->clearMediaCollection('certificates');
-                $education->delete();
+
+            if($profile->education){
+                foreach ($profile->education as $education) {
+                    $education->clearMediaCollection('certificates');
+                    $education->delete();
+                }
             }
 
             // Delete work experience media and records
-            foreach ($profile->workExperiences as $workExperience) {
-                $workExperience->clearMediaCollection('certificates');
-                $workExperience->delete();
+
+            if($profile->workExperiences){
+                foreach ($profile->workExperiences as $workExperience) {
+                    $workExperience->clearMediaCollection('certificates');
+                    $workExperience->delete();
+                }
             }
+
 
             // Delete socials if necessary
             if ($profile->socials) {
-                $profile->socials()->delete();
+                foreach($profile->socials as $social){
+                    $social->delete();
+                }
+            }
+
+
+            if($profile->profileType){
+                DB::table('profile_type')
+                ->where('profile_id', $profile->id)
+                ->update(['profile_type.deleted_at' => now()]);
             }
 
             // Finally, delete the profile
             $profile->delete();
-            DB::table('profile_type')
-            ->where('profile_id', $profile->id)
-            ->update(['profile_type.deleted_at' => now()]);
 
             DB::commit();
 
-            return $this->success(status: Response::HTTP_OK, message: 'Profile deleted successfully.', data:[]);
+            return $this->success(status: Response::HTTP_OK, message: 'Profile deleted successfully.', data:$profile);
         } catch (Exception $e) {
             DB::rollBack();
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: $e->getMessage());

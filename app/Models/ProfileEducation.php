@@ -71,11 +71,13 @@ class ProfileEducation extends Model implements HasMedia
         foreach ($mediaItems as $mediaItem) {
             $mimeType = $mediaItem->mime_type;
             $conversionUrls = [];
+            $column = $mediaItem->getCustomProperty('column');
+
 
             if ($mimeType === 'application/pdf') {
-                $conversions[] = [
+                $conversions[$column] = [
                     'original' => $mediaItem->getUrl(),
-                    'type' => 'pdf',
+                    'type' => $mimeType,
                 ];
             } else {
                 $conversionNames = $mediaItem->getMediaConversionNames();
@@ -84,9 +86,9 @@ class ProfileEducation extends Model implements HasMedia
                     $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
                 }
 
-                $conversions[] = [
+                $conversions[$column] = [
                     'original' => $mediaItem->getUrl(),
-                    'type' => 'image',
+                    'type' => $mimeType,
                     'conversions' => $conversionUrls,
                 ];
             }

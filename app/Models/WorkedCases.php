@@ -21,8 +21,8 @@ class WorkedCases extends Model
         'rate',
         'currency_id',
         'status',
-        'start_time',
-        'end_time',
+        'start_date',
+        'end_date',
         'is_paid',
         'status'
     ];

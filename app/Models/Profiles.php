@@ -57,12 +57,14 @@ class Profiles extends Model implements HasMedia
     }
 
     public function socials(){
-        // return $this->hasOne(ProfileSocials::class , 'profiles_id');
-        return $this->belongsToMany(SocialMedia::class , 'profile_socials' , 'profile_id' , 'social_id')
-        ->withTimestamps()
-        ->withPivot([
-            'link'
-        ]);
+        return $this->hasMany(ProfileSocials::class , 'profile_id');
+        // return $this->belongsToMany(SocialMedia::class , 'profile_socials' , 'profile_id' , 'social_id')
+        // ->withTimestamps()
+        // ->withTrashed()
+        // ->withPivot([
+        //     'link'
+        // ])
+        // ->wherePivotNull('deleted_at');
     }
 
 
@@ -126,9 +128,10 @@ class Profiles extends Model implements HasMedia
         foreach ($mediaItems as $mediaItem) {
             $mimeType = $mediaItem->mime_type;
             $conversionUrls = [];
+            $column = $mediaItem->getCustomProperty('column');
 
             if ($mimeType === 'application/pdf') {
-                $conversions[] = [
+                $conversions[$column] = [
                     'uuid' => $mediaItem->uuid,
                     'original' => $mediaItem->getUrl(),
                     'type' => 'pdf',
@@ -140,7 +143,7 @@ class Profiles extends Model implements HasMedia
                     $conversionUrls[$conversionName] = $mediaItem->getUrl($conversionName);
                 }
 
-                $conversions[] = [
+                $conversions[$column] = [
                     'uuid' => $mediaItem->uuid,
                     'original' => $mediaItem->getUrl(),
                     'type' => 'image',

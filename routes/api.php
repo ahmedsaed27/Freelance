@@ -55,6 +55,9 @@ Route::middleware(['api' , 'jwtMiddleware'])->group(function(){
     });
 
     Route::apiResource('profile' , Profiles::class)->except('index' , 'show');
+    Route::get('get/profile/from/token' , [Profiles::class , 'getProfileFromToken']);
+    Route::patch('update/profile/from-token' , [Profiles::class , 'updateProfileFromToken']);
+
     Route::post('profile/restore/{id}' , [Profiles::class , 'restore']);
     Route::get('user-profile' ,  [Profiles::class , 'getUserProfile']);
 

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Rules\UniqueCaseProfile;
 use App\Rules\ValidSuggestedRate;
+use App\Rules\WithinDays;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -39,9 +40,12 @@ class Receive extends FormRequest
                 'numeric',
                 new ValidSuggestedRate($this->caseId)
             ],
-            'description' => 'required|string',
-            'estimation_time' => 'required|date|after:today',
-            'currency_id' => 'required|exists:currencies,id'
+            'estimation_time' => [
+                'required',
+                'date',
+                new WithinDays($this->caseId)
+            ],
+            'description' => 'nullable'
         ];
 
         // if($this->method('PATCH') || $this->method('PUT')){

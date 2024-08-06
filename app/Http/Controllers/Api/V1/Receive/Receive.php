@@ -35,7 +35,7 @@ class Receive extends Controller
      */
     public function store(V1Receive $request)
     {
-        $pivotData = $request->only(['suggested_rate', 'description', 'estimation_time' , 'currency_id']);
+        $pivotData = $request->only(['suggested_rate', 'estimation_time']);
         $pivotData['status'] = 'Pending';
 
         $user = auth()->guard('api')->user();
@@ -55,6 +55,8 @@ class Receive extends Controller
                 'message' => 'Invalid case ID.',
             ], Response::HTTP_BAD_REQUEST);
         }
+
+        $pivotData['currency_id'] = $case->currency_id;
 
         $profile->receive()->attach($request->caseId, $pivotData);
 

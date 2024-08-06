@@ -15,14 +15,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('profile_id')->constrained('profiles' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('case_id')->constrained('cases' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
+
             $table->float('rate');
             $table->foreignId('currency_id')->constrained('currencies' , 'id')->cascadeOnDelete()->cascadeOnUpdate();
 
             $table->enum('status' , ['Pending' , 'In Progress' , 'Completed'])->default('Pending');
 
-            $table->dateTime('start_time');
-            $table->dateTime('end_time');
-            $table->boolean('is_paid')->default(false); // defualt value
+            $table->dateTime('start_date')->nullable();
+            $table->dateTime('end_date')->nullable();
+            $table->boolean('is_paid')->default(false);
 
             $table->softDeletes();
             $table->timestamps();
