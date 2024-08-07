@@ -27,7 +27,8 @@ class CaseResource extends JsonResource
             'country' => new CountriesResource($this->whenLoaded('country')),
             'city' => new CitiesResource($this->whenLoaded('city')),
             'currency' => new CurrencyResource($this->whenLoaded('currency')),
-            'user' => !$this->is_anonymous ? new UserResource($this->whenLoaded('user')) : 'anonymous',
+            'is_anonymous' => $this->is_anonymous,
+            'user' => $this->is_anonymous == true ? 'anonymous' : new UserResource($this->whenLoaded('user')),
             'receive'=> $this->whenLoaded('receive'),
         ];
     }
