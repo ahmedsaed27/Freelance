@@ -31,7 +31,8 @@ class Cases extends Model implements HasMedia
         'max_amount',
         'type_id',
         'status',
-        'number_of_days'
+        'number_of_days',
+        'is_anonymous',
     ];
 
     protected $appends = ['conversion_urls'];
