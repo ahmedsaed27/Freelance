@@ -116,21 +116,30 @@ class WorkedCasesController extends Controller
     public function update(UpdateWorkedCaseRequest $request, string $id)
     {
         $data = WorkedCases::find($id);
+        $profile = auth()->guard('api')->user()->profile;
 
         if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'WorkedCases not found.',);
         }
 
-        if($data->profile_id != auth()->guard('api')->id()){
-            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Profile not found.',);
+        if(!$profile){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'User Dosnt Have Profile.',);
+        }
+
+        if($data->profile_id != $profile->id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Profile Owner Can Update The WorkedCase.',);
+        }
+
+        if($data->case->status != 'Assigned'){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cant Update WorkedCase When The Status Is Opened.',);
         }
 
         DB::beginTransaction();
 
-        $data->update([
-            'status' => $request->status,
-            'start_date' => now()
-        ]);
+        match($request->status){
+            'In Progress' => $data->update(['status' => $request->status,'start_date' => now()]),
+            'Completed' => $data->update(['status' => $request->status,'end_date' => now()]),
+        };
 
         DB::commit();
 
@@ -147,6 +156,10 @@ class WorkedCasesController extends Controller
 
         if (!$data) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'WorkedCases not found.',);
+        }
+
+        if($data->case->status == 'Assigned'){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cant Delete WorkedCase When The Case Status Is Assigned.',);
         }
 
         $data->delete();

@@ -138,6 +138,10 @@ class Cases extends Controller
                 return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Created The Case Can Update It.',);
             }
 
+            if($case->status == 'Assigned'){
+                return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cant Update Case When The Status Is Assigned.',);
+            }
+
             DB::beginTransaction();
             $case->update($request->except('id' , 'certificate'));
             $case->caseKeyword()->sync($request->input('keywords'));
@@ -208,6 +212,10 @@ class Cases extends Controller
 
         if($case->user_id != auth()->guard('api')->id()){
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only User Who Created The Case Can Delete It.',);
+        }
+
+        if($case->status == 'Assigned'){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cant Delete Case When The Status Is Assigned.',);
         }
 
         if($case->getMedia('case')){
