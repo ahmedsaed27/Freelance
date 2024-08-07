@@ -24,6 +24,7 @@ class ProfileResource extends JsonResource
             'career' => $this->career,
             'city' => new CitiesResource($this->whenLoaded('city')),
             'country' => new CountriesResource($this->whenLoaded('country')),
+            'bookings' => BookingResource::collection($this->whenLoaded('bookings')),
             'field' => $this->field,
             'specialization' => $this->specialization,
             'experience' => $this->experience,
