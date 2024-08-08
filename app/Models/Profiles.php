@@ -59,14 +59,14 @@ class Profiles extends Model implements HasMedia
     }
 
     public function socials(){
-        return $this->hasMany(ProfileSocials::class , 'profile_id');
-        // return $this->belongsToMany(SocialMedia::class , 'profile_socials' , 'profile_id' , 'social_id')
-        // ->withTimestamps()
-        // ->withTrashed()
-        // ->withPivot([
-        //     'link'
-        // ])
-        // ->wherePivotNull('deleted_at');
+        // return $this->hasMany(ProfileSocials::class , 'profile_id');
+        return $this->belongsToMany(SocialMedia::class , 'profile_socials' , 'profile_id' , 'social_id')
+        ->withTimestamps()
+        ->withTrashed()
+        ->withPivot([
+            'link'
+        ])
+        ->wherePivotNull('deleted_at');
     }
 
 

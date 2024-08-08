@@ -155,7 +155,7 @@ class Profiles extends Controller
     public function updateProfileFromToken(ProfilesRequest $request){
         try {
             DB::beginTransaction();
-            
+
             // Fetch the existing profile with related models
             $profile = ProfilesModel::where('user_id' , auth()->guard('api')->id())->first();
 
@@ -265,9 +265,9 @@ class Profiles extends Controller
 
             // Delete socials if necessary
             if ($profile->socials) {
-                foreach($profile->socials as $social){
-                    $social->delete();
-                }
+                DB::table('profile_socials')
+                ->where('profile_id', $profile->id)
+                ->update(['profile_socials.deleted_at' => now()]);
             }
 
 
@@ -330,7 +330,10 @@ class Profiles extends Controller
         $data->restore();
         $data->education()->withTrashed()->restore();
         $data->workExperiences()->withTrashed()->restore();
-        $data->socials()->withTrashed()->restore();
+
+        DB::table('profile_socials')
+        ->where('profile_id', $data->id)
+        ->update(['profile_socials.deleted_at' => null]);
 
         DB::table('profile_type')
         ->where('profile_id', $data->id)
