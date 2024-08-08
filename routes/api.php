@@ -147,6 +147,7 @@ Route::middleware(['api', 'jwtMiddleware'])->group(function () {
     Route::get('profile-social/trashed/all', [ProfileSocialsController::class, 'getAllTrashedData']);
     Route::post('profile-social/logs/{id}', [ProfileSocialsController::class, 'getLogs']);
     Route::post('profile-social/restore/{id}', [ProfileSocialsController::class, 'restore']);
+    Route::post('profile-social/update/all',[ProfileSocialsController::class,'updateProfileSocialsArrayByProfileId'])
 
     Route::apiResource('profile-education', ProfileEducationController::class);
     Route::get('profile-education/get/all', [ProfileEducationController::class, 'getAllDataWithoutPaginate']);
