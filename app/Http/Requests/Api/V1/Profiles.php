@@ -98,7 +98,7 @@ class Profiles extends FormRequest
             'hourly_rate' => 'required|numeric',
             'image' => $imageRules,
             'cv' => $cvRules,
-            'years_of_experience' => 'required|numeric',
+            'years_of_experience' => 'required|numeric|min:0|max:127',
             'types' => 'required|array',
             'types.*' => 'exists:types,id',
             'currency_id' => 'required|exists:currencies,id',

@@ -64,6 +64,11 @@ class Cases extends Model implements HasMedia
     public function countrie(){
         return $this->belongsTo(Country::class , 'country_id');
     }
+
+    public function currency(){
+        return $this->belongsTo(Currency::class , 'currency_id');
+    }
+
     public function city(){
         return $this->belongsTo(Cities::class , 'city_id');
     }
