@@ -21,12 +21,12 @@ class Receive extends Controller
      */
     public function index()
     {
-        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->paginate(10);
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency')->paginate(10);
         return $this->successPaginated(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
     }
 
     public function getAllDataWithoutPaginate(){
-        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->get();
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency')->get();
         return $this->success(status:Response::HTTP_OK , message:'Profile Retrieved Successfully.' , data:$profile_receive);
     }
 
@@ -35,7 +35,7 @@ class Receive extends Controller
      */
     public function store(V1Receive $request)
     {
-        $pivotData = $request->only(['suggested_rate', 'estimation_time']);
+        $pivotData = $request->only(['suggested_rate', 'estimation_time' , 'description']);
         $pivotData['status'] = 'Pending';
 
         $user = auth()->guard('api')->user();
@@ -63,7 +63,7 @@ class Receive extends Controller
         return response()->json([
             'status' => Response::HTTP_OK,
             'message' => 'User received the case successfully.',
-            'data' => $profile->receive()->wherePivot('case_id', $request->caseId)->first(),
+            'data' => CasesProfile::where('case_id' , $case->id)->where('profile_id' ,  $profile->id)->first(),
         ], Response::HTTP_OK);
 
     }
@@ -74,7 +74,7 @@ class Receive extends Controller
     public function show(string $id)
     {
 
-        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency_id')->find($id);
+        $profile_receive = CasesProfile::with('profile'  , 'profile.user', 'cases' , 'cases.city' , 'currency')->find($id);
 
         if (!$profile_receive) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'received not found.',);
