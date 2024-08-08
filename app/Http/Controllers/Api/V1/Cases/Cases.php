@@ -21,7 +21,7 @@ class Cases extends Controller
      */
     public function index()
     {
-        $cases = ModelsCases::with('user' , 'city', 'caseKeyword' , 'caseSkill' , 'receive')->paginate(10);
+        $cases = ModelsCases::with('user' , 'city', 'caseKeyword' , 'caseSkill' , 'receive' , 'receive.user')->paginate(10);
 
         return $this->successPaginated(
             status:Response::HTTP_OK,
@@ -31,7 +31,7 @@ class Cases extends Controller
     }
 
     public function getAllDataWithoutPaginate(){
-        $data = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill')->get();
+        $data = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill' ,'receive','receive.user')->get();
 
         return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $data);
     }
@@ -109,7 +109,7 @@ class Cases extends Controller
      */
     public function show(string $id)
     {
-        $case = ModelsCases::with('city' ,'caseKeyword' , 'caseSkill' , 'receive')->find($id);
+        $case = ModelsCases::with('city' ,'caseKeyword' , 'caseSkill' , 'receive' , 'receive.user')->find($id);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
