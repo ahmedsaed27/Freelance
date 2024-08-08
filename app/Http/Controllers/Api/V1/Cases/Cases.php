@@ -241,7 +241,7 @@ class Cases extends Controller
 
     public function getCaseByToken(){
 
-        $case = ModelsCases::with('user')->where('user_id' , auth()->guard('api')->id())->first();
+        $case = ModelsCases::with('user')->where('user_id' , auth()->guard('api')->id())->paginate(10);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
