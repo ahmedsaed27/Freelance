@@ -109,7 +109,7 @@ class Cases extends Controller
      */
     public function show(string $id)
     {
-        $case = ModelsCases::with('city' ,'caseKeyword' , 'caseSkill' , 'receive')->find($id);
+        $case = ModelsCases::with('city' ,'caseKeyword' , 'caseSkill' , 'receive', 'currency')->find($id);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
