@@ -22,6 +22,7 @@ class CaseResource extends JsonResource
             'specialization' => $this->specialization,
             'max_amount' => $this->max_amount,
             'min_amount' => $this->min_amount,
+            'number_of_days' => $this->number_of_days,
             'description' => $this->description,
             'status' => $this->status,
             'country' => new CountriesResource($this->whenLoaded('country')),
@@ -32,6 +33,8 @@ class CaseResource extends JsonResource
             'receive'=> $this->whenLoaded('receive'),
             'keywords'=> $this->whenLoaded('caseKeyword'),
             'Skills'=> $this->whenLoaded('caseSkill'),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }
