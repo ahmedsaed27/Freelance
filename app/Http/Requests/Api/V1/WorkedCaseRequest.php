@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\CreateWorkedCaseWhenTheProfileIsAssigned;
 use App\Rules\OwnerTheCase;
 use App\Rules\UniqueProfileCase;
 use Illuminate\Contracts\Validation\Validator;
@@ -31,6 +32,7 @@ class WorkedCaseRequest extends FormRequest
             'case_id' => [
                 'required',
                 'exists:cases,id',
+                new CreateWorkedCaseWhenTheProfileIsAssigned($this->case_id , $this->profile_id),
                 new OwnerTheCase($this->case_id),
                 new UniqueProfileCase($this->profile_id, $this->case_id),
             ],
@@ -39,7 +41,7 @@ class WorkedCaseRequest extends FormRequest
             // 'status' => 'required|string|in:Pending,In Progress,Completed',
             // 'start_time' => 'required|date',
             // 'end_time' => 'nullable|date|after_or_equal:start_time',
-            'is_paid' => 'required|boolean',
+            // 'is_paid' => 'required|boolean',
         ];
     }
 

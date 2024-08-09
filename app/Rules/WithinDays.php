@@ -27,7 +27,8 @@ class WithinDays implements ValidationRule
         $case = Cases::find($this->case);
 
         if(!$case){
-            $fail('case not found.');
+            $fail('The selected case ID is invalid.');
+            return;
         }
         // Convert value to a Carbon instance
         $estimationTime = Carbon::parse($value);
@@ -39,6 +40,7 @@ class WithinDays implements ValidationRule
         // Check if the estimation time is within the allowed days
         if ($diffInDays > $case->number_of_days) {
             $fail("The {$attribute} must be within {$case->number_of_days} days from today.");
+            return;
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Receive;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Receive as V1Receive;
+use App\Http\Requests\Api\V1\UpdateReceiveStatus;
 use App\Models\CasesProfile;
 use App\Models\CasesUsers;
 use App\Models\Profiles;
@@ -105,6 +106,24 @@ class Receive extends Controller
         }
 
         $data->update($request->except('status'));
+
+        return $this->success(status: Response::HTTP_OK, message: 'received the case Updated successfully.', data: $data);
+    }
+
+    public function updateStatusByID(UpdateReceiveStatus $request , string $id){
+
+        $data = CasesProfile::find($id);
+        $user_id = auth()->guard('api')->id();
+
+        if(!$data){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'received not found.',);
+        }
+
+        if($data->cases?->user_id != $user_id){
+            return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Only Case Owner Can Be Update Data.',);
+        }
+
+        $data->update($request->validated());
 
         return $this->success(status: Response::HTTP_OK, message: 'received the case Updated successfully.', data: $data);
     }

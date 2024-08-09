@@ -19,13 +19,14 @@ class UniqueProfileCase implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $exists = WorkedCases::query() // replace 'your_table_name' with the actual table name
+        $exists = WorkedCases::query()
             ->where('profile_id', $this->profileId)
             ->where('case_id', $this->caseId)
             ->exists();
 
         if ($exists) {
             $fail('The combination of profile and case already exists.');
+            return;
         }
     }
 }

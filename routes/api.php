@@ -76,6 +76,7 @@ Route::middleware(['api', 'jwtMiddleware'])->group(function () {
     Route::get('receive/trashed/all', [Receive::class, 'getAllTrashedData']);
     Route::post('receive/logs/{id}', [Receive::class, 'getLogs']);
     Route::post('receive/restore/{id}', [Receive::class, 'restore']);
+    Route::patch('receive/update/status/{id}', [Receive::class, 'updateStatusByID']);
 
     // Route::apiResource('booking' , BookingController::class);
     Route::post('booking/create', [BookingController::class, 'create']);

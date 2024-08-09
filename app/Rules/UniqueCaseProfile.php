@@ -30,6 +30,7 @@ class UniqueCaseProfile implements ValidationRule
 
         if ($exists) {
             $fail('The profile has already received this case.');
+            return;
         }
     }
 }

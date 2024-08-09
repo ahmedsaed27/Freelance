@@ -23,7 +23,7 @@ class WorkedCases extends Model
         'status',
         'start_date',
         'end_date',
-        'is_paid',
+        // 'is_paid',
         'status'
     ];
 

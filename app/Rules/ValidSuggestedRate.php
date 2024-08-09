@@ -25,12 +25,13 @@ class ValidSuggestedRate implements ValidationRule
         $case = Cases::find($this->caseId);
 
         if (!$case) {
-            $fail('The selected case is invalid.');
+            $fail('The selected case ID is invalid.');
             return;
         }
 
         if ($value < $case->min_amount || $value > $case->max_amount) {
             $fail('The suggested rate must be between ' . $case->min_amount . ' and ' . $case->max_amount . '.');
+            return;
         }
     }
 }
