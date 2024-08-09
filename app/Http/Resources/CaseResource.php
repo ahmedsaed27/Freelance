@@ -30,6 +30,8 @@ class CaseResource extends JsonResource
             'is_anonymous' => $this->is_anonymous,
             'user' => $this->is_anonymous == true ? 'anonymous' : new UserResource($this->whenLoaded('user')),
             'receive'=> $this->whenLoaded('receive'),
+            'keywords'=> $this->whenLoaded('caseKeyword'),
+            'Skills'=> $this->whenLoaded('caseSkill'),
         ];
     }
 }
