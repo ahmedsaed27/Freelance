@@ -22,7 +22,8 @@ class Cases extends Controller
     public function index()
     {
         $cases = ModelsCases::with('user' , 'city', 'caseKeyword' , 'caseSkill'  ,'currency', 'receive' , 'receive.user')
-        ->where('user_id' , '!=' , auth()->guard('api')->id())->paginate(10);
+        ->paginate(10);
+        // ->where('user_id' , '!=' , auth()->guard('api')->id())->paginate(10);
 
         return $this->successPaginated(
             status:Response::HTTP_OK,
@@ -33,7 +34,8 @@ class Cases extends Controller
 
     public function getAllDataWithoutPaginate(){
         $data = ModelsCases::with('user' ,'city', 'caseKeyword' , 'caseSkill' , 'currency','receive','receive.user')
-        ->where('user_id' , '!=' , auth()->guard('api')->id())->get();
+        ->get();
+        // ->where('user_id' , '!=' , auth()->guard('api')->id())->get();
 
         return $this->success(status: Response::HTTP_OK, message: 'Cases Retrieved Successfully.', data: $data);
     }
@@ -112,7 +114,8 @@ class Cases extends Controller
     public function show(string $id)
     {
         $case = ModelsCases::with('user' ,'city' ,'caseKeyword' , 'caseSkill'  ,'currency', 'receive' , 'receive.user')
-        ->where('user_id' , '!=' , auth()->guard('api')->id())->find($id);
+        ->find($id);
+        // ->where('user_id' , '!=' , auth()->guard('api')->id())->find($id);
 
         if (!$case) {
             return $this->error(status: Response::HTTP_INTERNAL_SERVER_ERROR, message: 'Cases not found.',);
