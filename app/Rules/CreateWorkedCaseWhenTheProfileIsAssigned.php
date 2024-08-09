@@ -27,8 +27,6 @@ class CreateWorkedCaseWhenTheProfileIsAssigned implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $case = Cases::find($this->case);
-
-        // dd($case);
         $profile = Profiles::find($this->profile);
 
         if(!$case){
@@ -41,10 +39,10 @@ class CreateWorkedCaseWhenTheProfileIsAssigned implements ValidationRule
             return;
         }
 
-        if ($case->status != 'Assigned') {
-            $fail('the case must be assigned.');
-            return;
-        }
+        // if ($case->status != 'Assigned') {
+        //     $fail('the case must be assigned.');
+        //     return;
+        // }
 
         $caseProfile = CasesProfile::where('case_id' , $case->id)->where('profile_id' , $profile->id)
         ->first();
@@ -55,10 +53,10 @@ class CreateWorkedCaseWhenTheProfileIsAssigned implements ValidationRule
         }
 
 
-        if($caseProfile->status != 'Accepted'){
-            $fail('The receive status must be accepted.');
-            return;
-        }
+        // if($caseProfile->status != 'Accepted'){
+        //     $fail('The receive status must be accepted.');
+        //     return;
+        // }
 
     }
 }

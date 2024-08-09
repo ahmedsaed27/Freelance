@@ -76,18 +76,22 @@ class WorkedCasesController extends Controller
                 return $this->error(status:Response::HTTP_INTERNAL_SERVER_ERROR , message:'Case not found.');
             }
 
-            $caseResivePivot =  $case->receive()->wherePivot('profile_id' , $request->profile_id)->first()->pivot;
+            $caseResivePivot =  $case->receive()->wherePivot('profile_id' , $request->profile_id)->first();
 
             $ArrOfData = [
                 'profile_id' => $request->profile_id,
                 'case_id' => $case->id,
-                'rate' => $caseResivePivot->suggested_rate,
-                'currency_id' => $caseResivePivot->currency_id,
+                'rate' => $caseResivePivot->pivot->suggested_rate,
+                'currency_id' => $caseResivePivot->pivot->currency_id,
                 'status' => 'Pending',
             ];
 
             DB::beginTransaction();
             $data = WorkedCases::create($ArrOfData);
+
+            $case->update(['status' => 'Assigned']);
+            $caseResivePivot->pivot->update(['status' => 'Accepted']);
+
             DB::commit();
 
             return $this->success(status: Response::HTTP_OK, message: 'WorkedCases Retrieved Successfully.', data: $data);
